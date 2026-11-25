@@ -1,1 +1,2657 @@
-
+<!DOCTYPE html>
+<html lang="id" class="scroll-smooth">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>GreenHouse Bejo GH — Sistem Manajemen Budidaya Melon Hidroponik & Drip System</title>
+    <!-- Tailwind CSS -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <!-- Google Fonts: Plus Jakarta Sans & Inter -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=Plus+Jakarta+Sans:wght@600;700;800&display=swap" rel="stylesheet">
+    <!-- Lucide Icons -->
+    <script src="https://unpkg.com/lucide@latest"></script>
+    <!-- jsPDF & AutoTable for PDF Export per Activity & All Activities -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf-autotable/3.8.2/jspdf.plugin.autotable.min.js"></script>
+    <script>
+        tailwind.config = {
+            theme: {
+                extend: {
+                    fontFamily: {
+                        sans: ['Inter', 'sans-serif'],
+                        display: ['Plus Jakarta Sans', 'sans-serif'],
+                    },
+                    colors: {
+                        emerald: {
+                            850: '#064e3b',
+                            950: '#022c22',
+                        },
+                        melon: {
+                            400: '#fbbf24',
+                            500: '#f59e0b',
+                            600: '#d97706',
+                        }
+                    }
+                }
+            }
+        }
+    </script>
+    <style>
+        .tab-active {
+            background-color: #059669;
+            color: #ffffff;
+            box-shadow: 0 4px 12px rgba(5, 150, 105, 0.25);
+        }
+        /* Custom scrollbar */
+        ::-webkit-scrollbar {
+            width: 6px;
+            height: 6px;
+        }
+        ::-webkit-scrollbar-track {
+            background: #f1f5f9;
+        }
+        ::-webkit-scrollbar-thumb {
+            background: #cbd5e1;
+            border-radius: 9999px;
+        }
+        ::-webkit-scrollbar-thumb:hover {
+            background: #94a3b8;
+        }
+    </style>
+</head>
+<body class="bg-slate-50 text-slate-800 font-sans antialiased selection:bg-emerald-200 selection:text-emerald-950">
+    <!-- Toast Notification Container (Pengganti alert/confirm bawaan browser) -->
+    <div id="toastContainer" class="fixed bottom-5 right-5 z-50 flex flex-col gap-2 max-w-sm w-full pointer-events-none"></div>
+    <!-- Top Header & Global System Selector -->
+    <header class="sticky top-0 z-40 bg-emerald-950 text-white border-b border-emerald-800/70 shadow-lg">
+        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+            <div class="flex flex-col lg:flex-row lg:items-center lg:justify-between py-3.5 gap-3">
+                <!-- Brand Identity -->
+                <div class="flex items-center justify-between">
+                    <div class="flex items-center gap-3">
+                        <div class="w-10 h-10 rounded-xl bg-gradient-to-br from-emerald-400 to-emerald-600 flex items-center justify-center shadow-inner">
+                            <i data-lucide="sprout" class="w-6 h-6 text-emerald-950"></i>
+                        </div>
+                        <div>
+                            <div class="flex items-center gap-2">
+                                <h1 class="font-display font-extrabold text-lg sm:text-xl tracking-tight text-white">GreenHouse <span class="text-melon-400">Bejo GH</span></h1>
+                                <span class="hidden sm:inline-flex items-center px-2 py-0.5 rounded-full text-[11px] font-semibold bg-emerald-800/90 text-emerald-200 border border-emerald-700">SOP Tervalidasi</span>
+                            </div>
+                            <p class="text-xs text-emerald-300/90">Sistem Kontrol &amp; SOP Budidaya Melon Greenhouse (NFT • DFT • Rakit Apung • Drip System)</p>
+                        </div>
+                    </div>
+                    <!-- Reset / Quick Status Button on Mobile -->
+                    <button onclick="openResetModal()" title="Reset Data ke Awal" class="lg:hidden p-2 rounded-lg bg-emerald-900 hover:bg-emerald-800 text-emerald-200 text-xs flex items-center gap-1">
+                        <i data-lucide="rotate-ccw" class="w-4 h-4"></i>
+                    </button>
+                </div>
+                <!-- Global Controls: User Database Profile, System Type, Cultivar, Growth Phase & PDF Rekap -->
+                <div class="flex flex-wrap items-center gap-2 sm:gap-2.5 bg-emerald-900/70 p-2 rounded-xl border border-emerald-800/80">
+                    <!-- User Database Profile Switcher (Auto-save per user) -->
+                    <div class="flex items-center gap-1.5 bg-emerald-950/90 px-2.5 py-1.5 rounded-lg border border-emerald-700/70">
+                        <i data-lucide="user-check" class="w-3.5 h-3.5 text-emerald-300"></i>
+                        <label for="userProfileInput" class="text-[11px] text-emerald-300 font-medium">User:</label>
+                        <input id="userProfileInput" type="text" value="Petani_Utama" onchange="handleUserProfileChange()" title="Database otomatis tersimpan per nama pengguna" class="w-24 sm:w-28 bg-transparent text-xs font-bold text-white focus:outline-none border-b border-emerald-600/60 focus:border-melon-400">
+                    </div>
+                    <!-- Hydroponic System Selector -->
+                    <div class="flex items-center gap-1.5 bg-emerald-950/90 px-2.5 py-1.5 rounded-lg border border-emerald-700/70">
+                        <i data-lucide="waves" class="w-3.5 h-3.5 text-melon-400"></i>
+                        <label for="globalSystemSelect" class="text-[11px] text-emerald-300 font-medium">Sistem:</label>
+                        <select id="globalSystemSelect" onchange="handleGlobalConfigChange()" class="bg-transparent text-xs font-bold text-white focus:outline-none cursor-pointer">
+                            <option value="NFT" class="bg-emerald-950 text-white">NFT (Nutrient Film)</option>
+                            <option value="DFT" class="bg-emerald-950 text-white">DFT (Deep Flow)</option>
+                            <option value="RAKIT" class="bg-emerald-950 text-white">Rakit Apung (Floating)</option>
+                            <option value="DRIP" class="bg-emerald-950 text-white">Drip System (Irigasi Tetes)</option>
+                        </select>
+                    </div>
+                    <!-- Melon Cultivar Selector -->
+                    <div class="flex items-center gap-1.5 bg-emerald-950/90 px-2.5 py-1.5 rounded-lg border border-emerald-700/70">
+                        <i data-lucide="award" class="w-3.5 h-3.5 text-emerald-400"></i>
+                        <label for="globalCultivarSelect" class="text-[11px] text-emerald-300 font-medium">Varietas:</label>
+                        <select id="globalCultivarSelect" onchange="handleGlobalConfigChange()" class="bg-transparent text-xs font-bold text-white focus:outline-none cursor-pointer">
+                            <option value="Intanon RZ" class="bg-emerald-950 text-white">Intanon RZ (Net Emas)</option>
+                            <option value="Fujisawa" class="bg-emerald-950 text-white">Fujisawa (Jepang)</option>
+                            <option value="Golden Aroma" class="bg-emerald-950 text-white">Golden Aroma</option>
+                            <option value="Rock Melon" class="bg-emerald-950 text-white">Rock Melon (Orange)</option>
+                        </select>
+                    </div>
+                    <!-- Active Growth Phase Selector -->
+                    <div class="flex items-center gap-1.5 bg-emerald-950/90 px-2.5 py-1.5 rounded-lg border border-emerald-700/70">
+                        <i data-lucide="calendar-clock" class="w-3.5 h-3.5 text-sky-400"></i>
+                        <label for="globalPhaseSelect" class="text-[11px] text-emerald-300 font-medium">Fase:</label>
+                        <select id="globalPhaseSelect" onchange="handleGlobalConfigChange()" class="bg-transparent text-xs font-bold text-white focus:outline-none cursor-pointer">
+                            <option value="0" class="bg-emerald-950 text-white">1. Persemaian (0–10 HSS)</option>
+                            <option value="1" class="bg-emerald-950 text-white">2. Pindah Tanam (1–7 HST)</option>
+                            <option value="2" class="bg-emerald-950 text-white" selected>3. Vegetatif (8–22 HST)</option>
+                            <option value="3" class="bg-emerald-950 text-white">4. Polinasi (23–30 HST)</option>
+                            <option value="4" class="bg-emerald-950 text-white">5. Pembesaran &amp; Net (31–50 HST)</option>
+                            <option value="5" class="bg-emerald-950 text-white">6. Pematangan / Brix (51–65 HST)</option>
+                        </select>
+                    </div>
+                    <!-- Download PDF Rekap Seluruh Kegiatan -->
+                    <button onclick="downloadAllActivitiesPDF()" title="Unduh Laporan PDF Rekap Seluruh Kegiatan" class="flex items-center gap-1.5 px-2.5 py-1.5 rounded-lg bg-melon-500 hover:bg-melon-600 text-emerald-950 text-xs font-extrabold transition shadow-sm cursor-pointer">
+                        <i data-lucide="file-down" class="w-3.5 h-3.5"></i>
+                        <span>PDF Rekap Semua</span>
+                    </button>
+                    <!-- Reset Data Button Desktop -->
+                    <button onclick="openResetModal()" title="Reset Data ke Pengaturan Awal" class="hidden lg:flex items-center gap-1 px-2.5 py-1.5 rounded-lg bg-emerald-800/80 hover:bg-rose-600/90 text-emerald-100 hover:text-white text-xs font-medium transition">
+                        <i data-lucide="rotate-ccw" class="w-3.5 h-3.5"></i>
+                        <span>Reset</span>
+                    </button>
+                </div>
+            </div>
+            <!-- Navigation Tabs -->
+            <nav class="flex items-center gap-1.5 overflow-x-auto pb-3 pt-1 no-scrollbar" aria-label="Menu Utama">
+                <button onclick="switchTab('about')" id="nav-about" class="nav-btn tab-active flex items-center gap-2 px-3.5 py-2 rounded-xl text-xs sm:text-sm font-semibold whitespace-nowrap transition">
+                    <i data-lucide="home" class="w-4 h-4"></i>
+                    <span>0. Tentang Kami</span>
+                </button>
+                <button onclick="switchTab('dashboard')" id="nav-dashboard" class="nav-btn flex items-center gap-2 px-3.5 py-2 rounded-xl text-xs sm:text-sm font-semibold text-emerald-200 hover:bg-emerald-900/90 whitespace-nowrap transition">
+                    <i data-lucide="activity" class="w-4 h-4"></i>
+                    <span>1. Monitoring &amp; VPD</span>
+                </button>
+                <button onclick="switchTab('sop')" id="nav-sop" class="nav-btn flex items-center gap-2 px-3.5 py-2 rounded-xl text-xs sm:text-sm font-semibold text-emerald-200 hover:bg-emerald-900/90 whitespace-nowrap transition">
+                    <i data-lucide="clipboard-check" class="w-4 h-4"></i>
+                    <span>2. SOP &amp; Checklist Fase</span>
+                </button>
+                <button onclick="switchTab('calculator')" id="nav-calculator" class="nav-btn flex items-center gap-2 px-3.5 py-2 rounded-xl text-xs sm:text-sm font-semibold text-emerald-200 hover:bg-emerald-900/90 whitespace-nowrap transition">
+                    <i data-lucide="calculator" class="w-4 h-4"></i>
+                    <span>3. Kalkulator Nutrisi</span>
+                </button>
+                <button onclick="switchTab('logbook')" id="nav-logbook" class="nav-btn flex items-center gap-2 px-3.5 py-2 rounded-xl text-xs sm:text-sm font-semibold text-emerald-200 hover:bg-emerald-900/90 whitespace-nowrap transition">
+                    <i data-lucide="calendar-days" class="w-4 h-4"></i>
+                    <span>4. Logbook &amp; Panen</span>
+                </button>
+                <button onclick="switchTab('diagnostics')" id="nav-diagnostics" class="nav-btn flex items-center gap-2 px-3.5 py-2 rounded-xl text-xs sm:text-sm font-semibold text-emerald-200 hover:bg-emerald-900/90 whitespace-nowrap transition">
+                    <i data-lucide="stethoscope" class="w-4 h-4"></i>
+                    <span>5. Diagnostik Hama</span>
+                </button>
+                <button onclick="switchTab('finance')" id="nav-finance" class="nav-btn flex items-center gap-2 px-3.5 py-2 rounded-xl text-xs sm:text-sm font-semibold text-emerald-200 hover:bg-emerald-900/90 whitespace-nowrap transition">
+                    <i data-lucide="coins" class="w-4 h-4"></i>
+                    <span>6. Inventaris &amp; Usaha Tani</span>
+                </button>
+                <button onclick="switchTab('references')" id="nav-references" class="nav-btn flex items-center gap-2 px-3.5 py-2 rounded-xl text-xs sm:text-sm font-semibold text-emerald-200 hover:bg-emerald-900/90 whitespace-nowrap transition">
+                    <i data-lucide="book-open" class="w-4 h-4"></i>
+                    <span>7. Pustaka &amp; Jurnal Valid</span>
+                </button>
+            </nav>
+        </div>
+    </header>
+    <!-- Main Workspace -->
+    <main class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-6 space-y-6">
+        <!-- Contextual Agronomic System Banner -->
+        <div id="systemContextBanner" class="bg-white border border-emerald-200/80 rounded-2xl p-4 shadow-sm flex flex-col md:flex-row md:items-center justify-between gap-4">
+            <div class="flex items-start gap-3">
+                <div class="p-2.5 rounded-xl bg-emerald-100 text-emerald-800 shrink-0 mt-0.5">
+                    <i data-lucide="info" class="w-5 h-5"></i>
+                </div>
+                <div>
+                    <div class="flex flex-wrap items-center gap-2">
+                        <h2 id="bannerSystemTitle" class="font-display font-bold text-slate-900 text-sm sm:text-base">Mode Aktif: NFT (Nutrient Film Technique) — Varietas Intanon RZ</h2>
+                        <span id="bannerTargetPPM" class="px-2.5 py-0.5 rounded-full text-xs font-bold bg-amber-100 text-amber-800">Target Nutrisi: 1000–1200 PPM (EC 2.0–2.4)</span>
+                    </div>
+                    <p id="bannerSystemNote" class="text-xs sm:text-sm text-slate-600 mt-1 leading-relaxed">
+                        Aliran lapisan tipis 2–3 mm dengan kemiringan talang 1–2%. Kritis terhadap mati listrik (maksimal toleransi pompa mati &lt; 30 menit pada siang terik) dan suhu larutan harus dijaga &lt; 28°C untuk mempertahankan Oksigen Terlarut (DO &gt; 6 mg/L).
+                    </p>
+                </div>
+            </div>
+            <div class="flex items-center gap-2 shrink-0">
+                <button onclick="downloadActivityPDF('banner')" class="px-3 py-2 rounded-xl bg-slate-100 hover:bg-slate-200 text-slate-800 text-xs font-bold transition flex items-center gap-1.5 cursor-pointer">
+                    <i data-lucide="file-down" class="w-3.5 h-3.5 text-emerald-700"></i>
+                    <span>PDF Ringkasan Sistem</span>
+                </button>
+                <button onclick="switchTab('sop')" class="px-3.5 py-2 rounded-xl bg-emerald-600 hover:bg-emerald-700 text-white text-xs font-semibold transition flex items-center gap-1.5 shadow-sm">
+                    <span>Buka Checklist SOP</span>
+                    <i data-lucide="arrow-right" class="w-3.5 h-3.5"></i>
+                </button>
+            </div>
+        </div>
+        <!-- ===================================================================== -->
+        <!-- TAB 0: TENTANG KAMI (PROFIL GREENHOUSE & KEUNGGULAN BUDIDAYA)         -->
+        <!-- ===================================================================== -->
+        <section id="tab-about" class="tab-section space-y-6">
+            <!-- Hero Profile Banner -->
+            <div class="bg-gradient-to-br from-emerald-950 via-emerald-900 to-emerald-850 text-white rounded-3xl p-6 sm:p-8 shadow-lg border border-emerald-800 relative overflow-hidden">
+                <div class="flex flex-col lg:flex-row lg:items-center justify-between gap-6 relative z-10">
+                    <div class="space-y-3 max-w-2xl">
+                        <span class="inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-xs font-bold bg-melon-500/20 text-melon-400 border border-melon-400/30">
+                            <i data-lucide="sparkles" class="w-3.5 h-3.5"></i>
+                            <span>Profil &amp; Identitas Greenhouse Modern</span>
+                        </span>
+                        <h2 class="font-display font-extrabold text-2xl sm:text-3xl leading-tight">
+                            Tentang <span class="text-melon-400">GreenHouse Bejo GH</span> — Budidaya Melon Premium Berbasis Presisi Agronomi
+                        </h2>
+                        <p class="text-xs sm:text-sm text-emerald-100/90 leading-relaxed">
+                            GreenHouse Bejo GH adalah unit agribisnis hortikultura modern yang berfokus pada produksi buah melon eksklusif (<em>Cucumis melo</em> L.) berkualitas tinggi dengan sistem hidroponik terukur (<strong>NFT, DFT, Rakit Apung &amp; Drip System</strong>). Setiap tanaman dirawat melalui pemantauan parameter nutrisi (EC/PPM), pH larutan, dan iklim mikro (VPD) untuk menghasilkan buah berjaring rapat, renyah, dan tingkat kemanisan konsisten di atas <strong>14 °Brix</strong>.
+                        </p>
+                        <div class="flex flex-wrap gap-2.5 pt-2">
+                            <button onclick="switchTab('dashboard')" class="px-4 py-2.5 rounded-xl bg-emerald-500 hover:bg-emerald-400 text-emerald-950 font-bold text-xs transition flex items-center gap-1.5 shadow-sm">
+                                <i data-lucide="activity" class="w-4 h-4"></i>
+                                <span>Lihat Monitoring Kebun</span>
+                            </button>
+                            <button onclick="switchTab('sop')" class="px-4 py-2.5 rounded-xl bg-emerald-800/80 hover:bg-emerald-800 text-white border border-emerald-700 font-semibold text-xs transition flex items-center gap-1.5">
+                                <i data-lucide="clipboard-check" class="w-4 h-4 text-melon-400"></i>
+                                <span>Pelajari SOP Budidaya</span>
+                            </button>
+                            <button onclick="downloadActivityPDF('about')" class="px-4 py-2.5 rounded-xl bg-white/10 hover:bg-white/20 text-white border border-white/20 font-semibold text-xs transition flex items-center gap-1.5 cursor-pointer">
+                                <i data-lucide="file-down" class="w-4 h-4 text-melon-400"></i>
+                                <span>Download PDF Profil GH</span>
+                            </button>
+                        </div>
+                    </div>
+                    <!-- Key Greenhouse Stats Card -->
+                    <div class="bg-emerald-950/80 border border-emerald-700/70 rounded-2xl p-5 lg:w-96 shrink-0 space-y-3.5">
+                        <div class="flex items-center justify-between border-b border-emerald-800 pb-2.5">
+                            <span class="text-xs font-bold uppercase tracking-wider text-emerald-300">Spesifikasi Fasilitas</span>
+                            <span class="text-[11px] font-semibold px-2 py-0.5 rounded-full bg-emerald-500/20 text-emerald-300">Aktif Berproduksi</span>
+                        </div>
+                        <div class="grid grid-cols-2 gap-3 text-xs">
+                            <div class="p-3 rounded-xl bg-emerald-900/60 border border-emerald-800/80">
+                                <span class="text-emerald-300 block">Kapasitas Populasi</span>
+                                <span class="font-display font-extrabold text-lg text-white mt-0.5 block">1.200+ Pohon</span>
+                                <span class="text-[11px] text-emerald-400">3 Blok Instalasi Terpisah</span>
+                            </div>
+                            <div class="p-3 rounded-xl bg-emerald-900/60 border border-emerald-800/80">
+                                <span class="text-emerald-300 block">Standar Mutu Panen</span>
+                                <span class="font-display font-extrabold text-lg text-melon-400 mt-0.5 block">14 – 16 °Brix</span>
+                                <span class="text-[11px] text-emerald-400">1 Pohon = 1 Buah Seleksi</span>
+                            </div>
+                            <div class="p-3 rounded-xl bg-emerald-900/60 border border-emerald-800/80">
+                                <span class="text-emerald-300 block">Proteksi Hama</span>
+                                <span class="font-display font-bold text-sm text-white mt-0.5 block">Insect Net 50 Mesh</span>
+                                <span class="text-[11px] text-emerald-400">UV Plastic 200 Micron</span>
+                            </div>
+                            <div class="p-3 rounded-xl bg-emerald-900/60 border border-emerald-800/80">
+                                <span class="text-emerald-300 block">Siklus Panen</span>
+                                <span class="font-display font-bold text-sm text-white mt-0.5 block">60 – 65 HST</span>
+                                <span class="text-[11px] text-emerald-400">Panen Terjadwal Kontinu</span>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <!-- Visi, Misi & Pilar Keunggulan -->
+            <div class="grid grid-cols-1 lg:grid-cols-12 gap-6">
+                <!-- Visi & Misi -->
+                <div class="lg:col-span-5 bg-white rounded-2xl p-6 border border-slate-200/80 shadow-sm space-y-4">
+                    <div class="flex items-center gap-2.5 text-emerald-800">
+                        <div class="p-2 rounded-xl bg-emerald-100">
+                            <i data-lucide="compass" class="w-5 h-5 text-emerald-700"></i>
+                        </div>
+                        <h3 class="font-display font-bold text-lg text-slate-900">Visi &amp; Misi Kami</h3>
+                    </div>
+                    <div class="p-4 rounded-xl bg-emerald-50/80 border border-emerald-100">
+                        <span class="text-[11px] font-bold uppercase tracking-wider text-emerald-700 block mb-1">Visi Greenhouse</span>
+                        <p class="text-xs sm:text-sm font-medium text-slate-800 leading-relaxed">
+                            Menjadi pusat produksi melon hidroponik modern yang unggul dalam presisi data agronomi, efisiensi sumber daya air, dan kemitraan agribisnis berkelanjutan.
+                        </p>
+                    </div>
+                    <div class="space-y-2.5 text-xs sm:text-sm text-slate-600">
+                        <span class="text-[11px] font-bold uppercase tracking-wider text-slate-500 block">Misi Operasional</span>
+                        <div class="flex items-start gap-2.5">
+                            <i data-lucide="check-circle-2" class="w-4 h-4 text-emerald-600 shrink-0 mt-0.5"></i>
+                            <p>Menerapkan kontrol nutrisi (EC/PPM, pH) dan iklim mikro (VPD) harian secara terukur pada setiap fase pertumbuhan.</p>
+                        </div>
+                        <div class="flex items-start gap-2.5">
+                            <i data-lucide="check-circle-2" class="w-4 h-4 text-emerald-600 shrink-0 mt-0.5"></i>
+                            <p>Meminimalisir penggunaan pestisida kimia sintetis melalui proteksi fisik greenhouse dan agen hayati.</p>
+                        </div>
+                        <div class="flex items-start gap-2.5">
+                            <i data-lucide="check-circle-2" class="w-4 h-4 text-emerald-600 shrink-0 mt-0.5"></i>
+                            <p>Menyediakan platform edukasi, riset varietas, dan pendampingan teknis bagi petani milenial dan mitra usaha tani.</p>
+                        </div>
+                    </div>
+                </div>
+                <!-- 4 Sistem Instalasi yang Dikelola -->
+                <div class="lg:col-span-7 bg-white rounded-2xl p-6 border border-slate-200/80 shadow-sm space-y-4">
+                    <div class="flex items-center justify-between border-b border-slate-100 pb-3">
+                        <div>
+                            <h3 class="font-display font-bold text-lg text-slate-900">Teknologi Hidroponik yang Kami Terapkan</h3>
+                            <p class="text-xs text-slate-500">Empat arsitektur instalasi yang disesuaikan dengan karakter varietas dan efisiensi energi</p>
+                        </div>
+                    </div>
+                    <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-3.5">
+                        <div class="p-3.5 rounded-2xl bg-slate-50 border border-slate-200/80 space-y-2 hover:border-emerald-300 transition">
+                            <div class="w-9 h-9 rounded-xl bg-emerald-100 text-emerald-700 flex items-center justify-center">
+                                <i data-lucide="waves" class="w-5 h-5"></i>
+                            </div>
+                            <h4 class="font-display font-bold text-slate-900 text-sm">1. Sistem NFT</h4>
+                            <p class="text-xs text-slate-600 leading-relaxed">
+                                Sirkulasi lapisan tipis 2–3 mm untuk oksigenasi akar maksimal. Memacu pertumbuhan vegetatif cepat dan pembentukan jaring (net) yang rapat.
+                            </p>
+                        </div>
+                        <div class="p-3.5 rounded-2xl bg-slate-50 border border-slate-200/80 space-y-2 hover:border-emerald-300 transition">
+                            <div class="w-9 h-9 rounded-xl bg-amber-100 text-amber-700 flex items-center justify-center">
+                                <i data-lucide="layers" class="w-5 h-5"></i>
+                            </div>
+                            <h4 class="font-display font-bold text-slate-900 text-sm">2. Sistem DFT</h4>
+                            <p class="text-xs text-slate-600 leading-relaxed">
+                                Genangan nutrisi 4–6 cm dengan sistem venturi. Memberikan keamanan ekstra terhadap fluktuasi listrik dan kestabilan suhu zona akar.
+                            </p>
+                        </div>
+                        <div class="p-3.5 rounded-2xl bg-slate-50 border border-slate-200/80 space-y-2 hover:border-emerald-300 transition">
+                            <div class="w-9 h-9 rounded-xl bg-sky-100 text-sky-700 flex items-center justify-center">
+                                <i data-lucide="droplets" class="w-5 h-5"></i>
+                            </div>
+                            <h4 class="font-display font-bold text-slate-900 text-sm">3. Rakit Apung</h4>
+                            <p class="text-xs text-slate-600 leading-relaxed">
+                                Kapasitas volume larutan besar dengan aerasi terlarut 24 jam. Sangat stabil menjaga keseimbangan EC pada fase pematangan buah.
+                            </p>
+                        </div>
+                        <div class="p-3.5 rounded-2xl bg-slate-50 border border-slate-200/80 space-y-2 hover:border-emerald-300 transition">
+                            <div class="w-9 h-9 rounded-xl bg-teal-100 text-teal-700 flex items-center justify-center">
+                                <i data-lucide="git-branch" class="w-5 h-5"></i>
+                            </div>
+                            <h4 class="font-display font-bold text-slate-900 text-sm">4. Drip System</h4>
+                            <p class="text-xs text-slate-600 leading-relaxed">
+                                Irigasi tetes presisi pada media tanam (cocopeat/sekam/rockwool) dengan dripper/emitter terukur untuk efisiensi air &amp; nutrisi optimal.
+                            </p>
+                        </div>
+                    </div>
+                    <!-- Varietas Unggulan -->
+                    <div class="pt-2">
+                        <span class="text-xs font-bold text-slate-700 block mb-2">Kultivar Melon Unggulan di Greenhouse Kami:</span>
+                        <div class="grid grid-cols-2 sm:grid-cols-4 gap-2.5 text-xs">
+                            <div class="p-2.5 rounded-xl bg-emerald-50/70 border border-emerald-200/70">
+                                <strong class="text-emerald-950 block">Intanon RZ</strong>
+                                <span class="text-[11px] text-slate-600">Kulit emas berjaring, daging hijau lembut</span>
+                            </div>
+                            <div class="p-2.5 rounded-xl bg-emerald-50/70 border border-emerald-200/70">
+                                <strong class="text-emerald-950 block">Fujisawa</strong>
+                                <span class="text-[11px] text-slate-600">Tipe Jepang, aroma kuat &amp; net tebal</span>
+                            </div>
+                            <div class="p-2.5 rounded-xl bg-emerald-50/70 border border-emerald-200/70">
+                                <strong class="text-emerald-950 block">Golden Aroma</strong>
+                                <span class="text-[11px] text-slate-600">Kulit kuning mulus, tekstur renyah</span>
+                            </div>
+                            <div class="p-2.5 rounded-xl bg-emerald-50/70 border border-emerald-200/70">
+                                <strong class="text-emerald-950 block">Rock Melon</strong>
+                                <span class="text-[11px] text-slate-600">Daging jingga kaya beta-karoten</span>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <!-- Layanan & Kunjungan Greenhouse -->
+            <div class="bg-white rounded-2xl p-6 border border-slate-200/80 shadow-sm flex flex-col md:flex-row items-start md:items-center justify-between gap-6">
+                <div class="space-y-1.5 max-w-2xl">
+                    <div class="flex items-center gap-2 text-emerald-700 font-bold text-xs uppercase tracking-wider">
+                        <i data-lucide="map-pin" class="w-4 h-4"></i>
+                        <span>Kemitraan, Edukasi &amp; Pemesanan Hasil Panen</span>
+                    </div>
+                    <h3 class="font-display font-bold text-lg text-slate-900">Terbuka untuk Suplai Buah Segar, Studi Banding &amp; Pelatihan Hidroponik</h3>
+                    <p class="text-xs sm:text-sm text-slate-600 leading-relaxed">
+                        Kami melayani pemesanan melon segar langsung dari kebun (petik saat matang optimal), kerja sama pasokan supermarket/horeca, serta pelatihan teknis manajemen nutrisi dan SOP greenhouse.
+                    </p>
+                </div>
+                <div class="flex flex-wrap gap-2.5 shrink-0">
+                    <button onclick="switchTab('finance')" class="px-4 py-2.5 rounded-xl bg-slate-100 hover:bg-slate-200 text-slate-800 text-xs font-bold transition flex items-center gap-1.5">
+                        <i data-lucide="bar-chart-3" class="w-4 h-4 text-emerald-600"></i>
+                        <span>Simulasi Usaha Tani</span>
+                    </button>
+                    <button onclick="switchTab('references')" class="px-4 py-2.5 rounded-xl bg-emerald-600 hover:bg-emerald-700 text-white text-xs font-bold transition flex items-center gap-1.5">
+                        <i data-lucide="book-open-check" class="w-4 h-4"></i>
+                        <span>Standar Ilmiah Kami</span>
+                    </button>
+                </div>
+            </div>
+        </section>
+        <!-- ===================================================================== -->
+        <!-- TAB 1: DASHBOARD MONITORING PARAMETER AIR & LINGKUNGAN (VPD & TELEMETRY) -->
+        <!-- ===================================================================== -->
+        <section id="tab-dashboard" class="tab-section hidden space-y-6">
+            <!-- Section Header with PDF Download & Manual Reset VPD/KPA -->
+            <div class="bg-white rounded-2xl p-4 sm:p-5 border border-slate-200/80 shadow-sm flex flex-col sm:flex-row sm:items-center justify-between gap-3">
+                <div>
+                    <h2 class="font-display font-bold text-lg text-slate-900">Monitoring Parameter Nutrisi (TDS/EC), pH &amp; Iklim Mikro (VPD / kPa)</h2>
+                    <p class="text-xs text-slate-500">Data tersimpan otomatis pada database pengguna aktif (<strong id="activeUserLabelDashboard" class="text-emerald-700">Petani_Utama</strong>) dan dapat di-reset manual kapan saja.</p>
+                </div>
+                <div class="flex flex-wrap items-center gap-2">
+                    <button type="button" onclick="resetVpdAndMonitoringManual()" class="px-3.5 py-2 rounded-xl bg-amber-50 hover:bg-amber-100 text-amber-900 border border-amber-200 text-xs font-bold transition flex items-center gap-1.5 cursor-pointer">
+                        <i data-lucide="refresh-cw" class="w-3.5 h-3.5 text-amber-700"></i>
+                        <span>Reset Monitoring &amp; VPD (kPa)</span>
+                    </button>
+                    <button type="button" onclick="downloadActivityPDF('monitoring')" class="px-3.5 py-2 rounded-xl bg-emerald-600 hover:bg-emerald-700 text-white text-xs font-bold transition flex items-center gap-1.5 shadow-sm cursor-pointer">
+                        <i data-lucide="file-down" class="w-3.5 h-3.5"></i>
+                        <span>Download PDF Monitoring</span>
+                    </button>
+                </div>
+            </div>
+            <!-- KPI Cards Grid -->
+            <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-5 gap-4">
+                <!-- PPM / TDS -->
+                <div class="bg-white rounded-2xl p-4 border border-slate-200/80 shadow-sm hover:shadow-md transition">
+                    <div class="flex items-center justify-between mb-2">
+                        <span class="text-xs font-semibold text-slate-500 uppercase tracking-wider">Kepekatan (TDS)</span>
+                        <span id="badge-ppm" class="text-[11px] font-bold px-2 py-0.5 rounded-full bg-emerald-100 text-emerald-800">Optimal</span>
+                    </div>
+                    <div class="flex items-baseline gap-1.5">
+                        <span id="kpi-ppm" class="font-display text-2xl font-extrabold text-slate-900">1150</span>
+                        <span class="text-xs font-medium text-slate-500">PPM (500 scale)</span>
+                    </div>
+                    <p id="target-ppm-text" class="text-[11px] text-slate-500 mt-2">Target Fase: 1000–1200 PPM (EC 2.0–2.4)</p>
+                </div>
+                <!-- pH Larutan -->
+                <div class="bg-white rounded-2xl p-4 border border-slate-200/80 shadow-sm hover:shadow-md transition">
+                    <div class="flex items-center justify-between mb-2">
+                        <span class="text-xs font-semibold text-slate-500 uppercase tracking-wider">pH Larutan</span>
+                        <span id="badge-ph" class="text-[11px] font-bold px-2 py-0.5 rounded-full bg-emerald-100 text-emerald-800">Optimal</span>
+                    </div>
+                    <div class="flex items-baseline gap-1.5">
+                        <span id="kpi-ph" class="font-display text-2xl font-extrabold text-slate-900">6.0</span>
+                        <span class="text-xs font-medium text-slate-500">pH</span>
+                    </div>
+                    <p class="text-[11px] text-slate-500 mt-2">Ideal Melon: 5.8 – 6.2 (Serapan Ca &amp; K)</p>
+                </div>
+                <!-- Suhu Larutan Nutrisi -->
+                <div class="bg-white rounded-2xl p-4 border border-slate-200/80 shadow-sm hover:shadow-md transition">
+                    <div class="flex items-center justify-between mb-2">
+                        <span class="text-xs font-semibold text-slate-500 uppercase tracking-wider">Suhu Air Tandon</span>
+                        <span id="badge-waterTemp" class="text-[11px] font-bold px-2 py-0.5 rounded-full bg-emerald-100 text-emerald-800">Aman</span>
+                    </div>
+                    <div class="flex items-baseline gap-1.5">
+                        <span id="kpi-waterTemp" class="font-display text-2xl font-extrabold text-slate-900">25.4</span>
+                        <span class="text-xs font-medium text-slate-500">°C</span>
+                    </div>
+                    <p class="text-[11px] text-slate-500 mt-2">Batas Kritis: &lt; 28°C (Cegah Pythium)</p>
+                </div>
+                <!-- Suhu & Kelembapan Udara GH -->
+                <div class="bg-white rounded-2xl p-4 border border-slate-200/80 shadow-sm hover:shadow-md transition">
+                    <div class="flex items-center justify-between mb-2">
+                        <span class="text-xs font-semibold text-slate-500 uppercase tracking-wider">Iklim Mikro GH</span>
+                        <span id="badge-climate" class="text-[11px] font-bold px-2 py-0.5 rounded-full bg-emerald-100 text-emerald-800">Ideal</span>
+                    </div>
+                    <div class="flex items-baseline gap-2">
+                        <span id="kpi-airTemp" class="font-display text-2xl font-extrabold text-slate-900">29.5°C</span>
+                        <span class="text-slate-300">|</span>
+                        <span id="kpi-rh" class="font-display text-xl font-bold text-emerald-700">68%</span>
+                    </div>
+                    <p class="text-[11px] text-slate-500 mt-2">Siang: 27–32°C | RH: 60–75%</p>
+                </div>
+                <!-- Vapor Pressure Deficit (VPD) -->
+                <div class="bg-gradient-to-br from-emerald-900 to-emerald-950 text-white rounded-2xl p-4 shadow-md">
+                    <div class="flex items-center justify-between mb-2">
+                        <span class="text-xs font-semibold text-emerald-300 uppercase tracking-wider">VPD Greenhouse</span>
+                        <span id="badge-vpd" class="text-[11px] font-bold px-2 py-0.5 rounded-full bg-emerald-500/20 text-emerald-200 border border-emerald-400/30">Optimal</span>
+                    </div>
+                    <div class="flex items-baseline gap-1.5">
+                        <span id="kpi-vpd" class="font-display text-2xl font-extrabold text-melon-400">1.32</span>
+                        <span class="text-xs font-medium text-emerald-200">kPa</span>
+                    </div>
+                    <p id="vpd-advice" class="text-[11px] text-emerald-200/90 mt-2">Transpirasi &amp; serapan Kalsium optimal (0.8–1.5 kPa)</p>
+                </div>
+            </div>
+            <!-- Input Sensor Manual & Grafik Dinamis -->
+            <div class="grid grid-cols-1 lg:grid-cols-12 gap-6">
+                <!-- Form Input Pembacaan Harian -->
+                <div class="lg:col-span-4 bg-white rounded-2xl p-5 border border-slate-200/80 shadow-sm space-y-4">
+                    <div class="flex items-center justify-between border-b border-slate-100 pb-3">
+                        <div>
+                            <h3 class="font-display font-bold text-slate-900 text-base">Catat Parameter Harian</h3>
+                            <p class="text-xs text-slate-500">Input hasil ukur EC meter, TDS meter, pH meter &amp; hygrometer</p>
+                        </div>
+                    </div>
+                    <form id="sensorForm" onsubmit="saveSensorReading(event)" class="space-y-3">
+                        <div class="grid grid-cols-2 gap-3">
+                            <div>
+                                <label class="block text-xs font-semibold text-slate-700 mb-1">TDS / PPM</label>
+                                <input type="number" id="input-ppm" step="10" min="100" max="3000" value="1150" oninput="syncEcFromPpm()" required class="w-full px-3 py-2 rounded-xl border border-slate-300 text-sm focus:ring-2 focus:ring-emerald-500 focus:border-emerald-500 outline-none">
+                            </div>
+                            <div>
+                                <label class="block text-xs font-semibold text-slate-700 mb-1">Cek EC Meter (mS/cm)</label>
+                                <input type="number" id="input-ec" step="0.05" min="0.1" max="6.0" value="2.30" oninput="syncPpmFromEc()" required class="w-full px-3 py-2 rounded-xl border border-emerald-400 bg-emerald-50/40 text-emerald-950 font-semibold text-sm focus:ring-2 focus:ring-emerald-500 focus:border-emerald-500 outline-none">
+                            </div>
+                        </div>
+                        <div class="grid grid-cols-3 gap-2.5">
+                            <div>
+                                <label class="block text-xs font-semibold text-slate-700 mb-1">pH Larutan</label>
+                                <input type="number" id="input-ph" step="0.1" min="3.5" max="9.0" value="6.0" required class="w-full px-2.5 py-2 rounded-xl border border-slate-300 text-sm focus:ring-2 focus:ring-emerald-500 outline-none">
+                            </div>
+                            <div>
+                                <label class="block text-xs font-semibold text-slate-700 mb-1">Suhu Air (°C)</label>
+                                <input type="number" id="input-waterTemp" step="0.1" min="10" max="45" value="25.4" required class="w-full px-2.5 py-2 rounded-xl border border-slate-300 text-sm focus:ring-2 focus:ring-emerald-500 outline-none">
+                            </div>
+                            <div>
+                                <label class="block text-xs font-semibold text-slate-700 mb-1">Suhu GH (°C)</label>
+                                <input type="number" id="input-airTemp" step="0.1" min="15" max="50" value="29.5" oninput="livePreviewVpd()" required class="w-full px-2.5 py-2 rounded-xl border border-slate-300 text-sm focus:ring-2 focus:ring-emerald-500 outline-none">
+                            </div>
+                        </div>
+                        <div class="grid grid-cols-2 gap-3">
+                            <div>
+                                <label class="block text-xs font-semibold text-slate-700 mb-1">RH Udara (%)</label>
+                                <input type="number" id="input-rh" step="1" min="20" max="100" value="68" oninput="livePreviewVpd()" required class="w-full px-3 py-2 rounded-xl border border-slate-300 text-sm focus:ring-2 focus:ring-emerald-500 outline-none">
+                            </div>
+                            <div>
+                                <label class="block text-xs font-semibold text-slate-700 mb-1">Pratinjau VPD (kPa)</label>
+                                <div id="live-vpd-preview" class="w-full px-3 py-2 rounded-xl bg-slate-100 border border-slate-200 text-sm font-bold text-emerald-800">1.32 kPa</div>
+                            </div>
+                        </div>
+                        <div>
+                            <label class="block text-xs font-semibold text-slate-700 mb-1">Waktu Pengukuran</label>
+                            <select id="input-timeSlot" class="w-full px-3 py-2 rounded-xl border border-slate-300 text-sm focus:ring-2 focus:ring-emerald-500 outline-none">
+                                <option value="Pagi (07:30)">Pagi (07:30 WIB) — Cek Awal</option>
+                                <option value="Siang (13:00)" selected>Siang (13:00 WIB) — Puncak Panas</option>
+                                <option value="Sore (17:00)">Sore (17:00 WIB) — Koreksi Nutrisi</option>
+                            </select>
+                        </div>
+                        <button type="submit" class="w-full py-2.5 px-4 rounded-xl bg-emerald-600 hover:bg-emerald-700 text-white font-semibold text-sm shadow-sm transition flex items-center justify-center gap-2">
+                            <i data-lucide="save" class="w-4 h-4"></i>
+                            <span>Simpan &amp; Analisis Parameter</span>
+                        </button>
+                    </form>
+                    <!-- Rekomendasi Koreksi Otomatis -->
+                    <div id="agronomyActionBox" class="p-3.5 rounded-xl bg-emerald-50 border border-emerald-200 text-xs text-emerald-900 space-y-1">
+                        <div class="font-bold flex items-center gap-1.5 text-emerald-800">
+                            <i data-lucide="check-circle-2" class="w-4 h-4 text-emerald-600"></i>
+                            <span>Status Agronomi: Kondisi Sangat Ideal</span>
+                        </div>
+                        <p class="leading-relaxed text-emerald-800/90">Nilai VPD 1.32 kPa mendukung pembukaan stomata optimal tanpa memicu stres air. Pertahankan sirkulasi udara dan oksigenasi tandon.</p>
+                    </div>
+                </div>
+                <!-- Grafik Tren PPM, pH, dan VPD (Custom Responsive SVG Chart) -->
+                <div class="lg:col-span-8 bg-white rounded-2xl p-5 border border-slate-200/80 shadow-sm flex flex-col justify-between">
+                    <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-2 mb-4">
+                        <div>
+                            <h3 class="font-display font-bold text-slate-900 text-base">Grafik Tren Nutrisi (PPM / EC) &amp; VPD Greenhouse</h3>
+                            <p class="text-xs text-slate-500">Riwayat pencatatan untuk mencegah fluktuasi EC ekstrem (penyebab buah pecah/cracking)</p>
+                        </div>
+                        <div class="flex items-center gap-4 text-xs font-semibold">
+                            <span class="flex items-center gap-1.5 text-emerald-700"><span class="w-3 h-3 rounded-full bg-emerald-500 inline-block"></span> PPM Nutrisi</span>
+                            <span class="flex items-center gap-1.5 text-amber-600"><span class="w-3 h-3 rounded-full bg-melon-500 inline-block"></span> VPD (kPa × 1000)</span>
+                        </div>
+                    </div>
+                    <!-- Responsive SVG Visualization Container -->
+                    <div class="w-full overflow-x-auto">
+                        <div id="telemetryChartContainer" class="min-w-[520px] h-64 bg-slate-50/70 rounded-xl border border-slate-100 p-3 relative">
+                            <!-- Rendered by JS -->
+                        </div>
+                    </div>
+                    <!-- Recent Logs Mini Table -->
+                    <div class="mt-4 pt-3 border-t border-slate-100">
+                        <div class="flex items-center justify-between mb-2">
+                            <span class="text-xs font-bold text-slate-700">Log Pengukuran Terakhir (Cek EC Meter, PPM &amp; VPD)</span>
+                            <span class="text-[11px] text-slate-400">Tersimpan di database pengguna</span>
+                        </div>
+                        <div class="overflow-x-auto">
+                            <table class="w-full text-left text-xs">
+                                <thead>
+                                    <tr class="text-slate-400 border-b border-slate-100">
+                                        <th class="py-1.5 font-semibold">Waktu</th>
+                                        <th class="py-1.5 font-semibold">PPM</th>
+                                        <th class="py-1.5 font-semibold">EC Meter</th>
+                                        <th class="py-1.5 font-semibold">pH</th>
+                                        <th class="py-1.5 font-semibold">Suhu Air</th>
+                                        <th class="py-1.5 font-semibold">Suhu/RH GH</th>
+                                        <th class="py-1.5 font-semibold">VPD (kPa)</th>
+                                        <th class="py-1.5 font-semibold">Status</th>
+                                    </tr>
+                                </thead>
+                                <tbody id="sensorLogTableBody" class="divide-y divide-slate-100 text-slate-700">
+                                    <!-- Populated by JS -->
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </section>
+        <!-- ===================================================================== -->
+        <!-- TAB 2: MODUL PANDUAN SOP INTERAKTIF & CHECKLIST FASE TANAM            -->
+        <!-- ===================================================================== -->
+        <section id="tab-sop" class="tab-section hidden space-y-6">
+            <div class="bg-white rounded-2xl p-5 border border-slate-200/80 shadow-sm space-y-4">
+                <div class="flex flex-col md:flex-row md:items-center justify-between gap-4 border-b border-slate-100 pb-4">
+                    <div>
+                        <h2 class="font-display font-bold text-lg text-slate-900">SOP Budidaya Melon Greenhouse Berbasis Fase &amp; Sistem</h2>
+                        <p class="text-xs sm:text-sm text-slate-500 mt-0.5">Checklist operasional tervalidasi untuk sistem <strong id="sopSystemLabel" class="text-emerald-700">NFT</strong>. Progres checklist otomatis tersimpan di database pengguna.</p>
+                    </div>
+                    <div class="flex flex-wrap items-center gap-3">
+                        <button onclick="downloadActivityPDF('sop')" class="px-3.5 py-2 rounded-xl bg-emerald-600 hover:bg-emerald-700 text-white text-xs font-bold transition flex items-center gap-1.5 shadow-sm cursor-pointer">
+                            <i data-lucide="file-down" class="w-3.5 h-3.5"></i>
+                            <span>Download PDF SOP Fase</span>
+                        </button>
+                        <div class="text-right">
+                            <span class="text-xs text-slate-500 block">Progres Fase Ini</span>
+                            <span id="sopProgressText" class="font-display font-bold text-emerald-700 text-base">0% Selesai</span>
+                        </div>
+                        <div class="w-24 h-2.5 bg-slate-100 rounded-full overflow-hidden">
+                            <div id="sopProgressBar" class="h-full bg-emerald-600 transition-all duration-300" style="width: 0%"></div>
+                        </div>
+                    </div>
+                </div>
+                <!-- Phase Selector Pills -->
+                <div class="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-6 gap-2 my-4" id="sopPhasePills">
+                    <!-- Populated by JS -->
+                </div>
+                <!-- Phase Technical Specification Card -->
+                <div id="sopPhaseDetailCard" class="grid grid-cols-1 lg:grid-cols-12 gap-6 mt-4">
+                    <!-- Left: Technical Parameters & System Differences -->
+                    <div class="lg:col-span-5 space-y-4">
+                        <div class="bg-emerald-950 text-white rounded-2xl p-5 space-y-3">
+                            <div class="flex items-center justify-between">
+                                <span id="sopPhaseBadge" class="text-xs font-bold uppercase tracking-wider px-2.5 py-1 rounded-lg bg-emerald-800 text-emerald-200">Fase 3</span>
+                                <span id="sopPhaseDays" class="text-xs font-semibold text-melon-400">8 – 22 HST</span>
+                            </div>
+                            <h3 id="sopPhaseTitle" class="font-display font-bold text-xl">Vegetatif &amp; Pewiwilan (Pruning)</h3>
+                            <p id="sopPhaseSummary" class="text-xs text-emerald-200 leading-relaxed">
+                                Pembentukan batang utama yang kokoh dan daun sehat sebagai pabrik fotosintesis sebelum pembungaan.
+                            </p>
+                            <div class="grid grid-cols-2 gap-2.5 pt-2">
+                                <div class="bg-emerald-900/80 p-3 rounded-xl border border-emerald-800">
+                                    <span class="text-[11px] text-emerald-300 block">Target TDS / EC</span>
+                                    <span id="sopTargetTDS" class="font-bold text-sm text-white">1000–1200 PPM</span>
+                                </div>
+                                <div class="bg-emerald-900/80 p-3 rounded-xl border border-emerald-800">
+                                    <span class="text-[11px] text-emerald-300 block">Target pH Air</span>
+                                    <span id="sopTargetPH" class="font-bold text-sm text-white">5.8 – 6.2</span>
+                                </div>
+                            </div>
+                        </div>
+                        <!-- Specific Adjustment for NFT vs DFT vs Rakit Apung vs Drip -->
+                        <div class="bg-amber-50 border border-amber-200 rounded-2xl p-4 space-y-2">
+                            <div class="flex items-center gap-2 text-amber-900 font-bold text-sm">
+                                <i data-lucide="settings-2" class="w-4 h-4 text-amber-600"></i>
+                                <span id="sopSystemSpecificHeader">Penyesuaian Khusus Sistem NFT</span>
+                            </div>
+                            <p id="sopSystemSpecificBody" class="text-xs text-amber-900/90 leading-relaxed">
+                                Pastikan debit aliran 1.5–2 liter/menit per gully. Pada fase ini akar mulai memenuhi dasar talang; periksa agar tidak ada penyumbatan pada pipa pembuangan (drainase).
+                            </p>
+                        </div>
+                    </div>
+                    <!-- Right: Interactive Action Checklist -->
+                    <div class="lg:col-span-7 bg-slate-50 rounded-2xl p-5 border border-slate-200/80 space-y-3">
+                        <div class="flex items-center justify-between">
+                            <h4 class="font-display font-bold text-slate-900 text-sm sm:text-base">Daftar Kerja &amp; SOP Langkah-demi-Langkah</h4>
+                            <button onclick="resetCurrentPhaseChecklist()" class="text-xs text-slate-500 hover:text-emerald-700 font-medium underline">Reset Centang</button>
+                        </div>
+                        <div id="sopChecklistContainer" class="space-y-2.5">
+                            <!-- Populated by JS -->
+                        </div>
+                    </div>
+                </div>
+                <!-- Dedicated SOP Teknik Drip System (Irigasi Tetes) Card -->
+                <div class="mt-6 pt-5 border-t border-slate-200 space-y-4">
+                    <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-2">
+                        <div class="flex items-center gap-2.5">
+                            <div class="p-2 rounded-xl bg-teal-100 text-teal-800">
+                                <i data-lucide="git-branch" class="w-5 h-5"></i>
+                            </div>
+                            <div>
+                                <h3 class="font-display font-bold text-base sm:text-lg text-slate-900">SOP Lengkap Teknik Drip System (Irigasi Tetes Melon)</h3>
+                                <p class="text-xs text-slate-500">Prosedur baku pengoperasian irigasi tetes, kalibrasi emitter/dripper, filtrasi, dan flushing saluran</p>
+                            </div>
+                        </div>
+                        <button onclick="downloadActivityPDF('drip_sop')" class="px-3.5 py-2 rounded-xl bg-teal-700 hover:bg-teal-800 text-white text-xs font-bold transition flex items-center gap-1.5 cursor-pointer shrink-0">
+                            <i data-lucide="file-down" class="w-3.5 h-3.5"></i>
+                            <span>Download PDF SOP Drip System</span>
+                        </button>
+                    </div>
+                    <div id="dripSopGrid" class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4 text-xs">
+                        <!-- Populated by JS -->
+                    </div>
+                </div>
+            </div>
+        </section>
+        <!-- ===================================================================== -->
+        <!-- TAB 3: KALKULATOR PERACIKAN NUTRISI AB MIX & pH ADJUSTMENT            -->
+        <!-- ===================================================================== -->
+        <section id="tab-calculator" class="tab-section hidden space-y-6">
+            <div class="flex justify-end">
+                <button onclick="downloadActivityPDF('calculator')" class="px-3.5 py-2 rounded-xl bg-emerald-600 hover:bg-emerald-700 text-white text-xs font-bold transition flex items-center gap-1.5 shadow-sm cursor-pointer">
+                    <i data-lucide="file-down" class="w-3.5 h-3.5"></i>
+                    <span>Download PDF Peracikan Nutrisi</span>
+                </button>
+            </div>
+            <div class="grid grid-cols-1 lg:grid-cols-12 gap-6">
+                <!-- Left Calculator Inputs -->
+                <div class="lg:col-span-5 bg-white rounded-2xl p-5 border border-slate-200/80 shadow-sm space-y-4">
+                    <div class="border-b border-slate-100 pb-3">
+                        <h2 class="font-display font-bold text-lg text-slate-900">Kalkulator Nutrisi AB Mix Melon</h2>
+                        <p class="text-xs text-slate-500 mt-0.5">Hitung takaran pekatan A &amp; B (ml) serta koreksi pH berdasarkan volume tandon aktual.</p>
+                    </div>
+                    <div class="space-y-3.5">
+                        <div>
+                            <label class="block text-xs font-semibold text-slate-700 mb-1">Volume Air Tandon Saat Ini (Liter)</label>
+                            <input type="number" id="calc-volume" value="500" min="10" max="20000" oninput="calculateNutrients()" class="w-full px-3.5 py-2.5 rounded-xl border border-slate-300 text-sm font-semibold focus:ring-2 focus:ring-emerald-500 outline-none">
+                            <p class="text-[11px] text-slate-400 mt-1">Catatan: Sistem DFT &amp; Rakit Apung umumnya membutuhkan volume tandon 2–3× lebih besar dibanding NFT; Drip System menyesuaikan jumlah emitter &amp; frekuensi tetes.</p>
+                        </div>
+                        <div class="grid grid-cols-2 gap-3">
+                            <div>
+                                <label class="block text-xs font-semibold text-slate-700 mb-1">PPM Air Baku / Awal</label>
+                                <input type="number" id="calc-currentPPM" value="120" min="0" max="2500" oninput="calculateNutrients()" class="w-full px-3 py-2 rounded-xl border border-slate-300 text-sm focus:ring-2 focus:ring-emerald-500 outline-none">
+                            </div>
+                            <div>
+                                <label class="block text-xs font-semibold text-slate-700 mb-1">Target PPM Fase Ini</label>
+                                <input type="number" id="calc-targetPPM" value="1150" min="200" max="2200" oninput="calculateNutrients()" class="w-full px-3 py-2 rounded-xl border border-slate-300 text-sm font-semibold text-emerald-700 focus:ring-2 focus:ring-emerald-500 outline-none">
+                            </div>
+                        </div>
+                        <div>
+                            <label class="block text-xs font-semibold text-slate-700 mb-1">Kepekatan Stok AB Mix (Konversi 5 ml A + 5 ml B / Liter)</label>
+                            <select id="calc-stockRatio" onchange="calculateNutrients()" class="w-full px-3 py-2 rounded-xl border border-slate-300 text-sm focus:ring-2 focus:ring-emerald-500 outline-none">
+                                <option value="200" selected>Standar Pekatan 1000L (5 ml A + 5 ml B = +1000 PPM/L)</option>
+                                <option value="160">Pekatan Formulasi Khusus Melon Generatif (+800 PPM/5ml/L)</option>
+                                <option value="240">Pekatan Tinggi (+1200 PPM/5ml/L)</option>
+                            </select>
+                        </div>
+                        <!-- pH Adjustment Sub-section -->
+                        <div class="pt-3 border-t border-slate-100">
+                            <h4 class="text-xs font-bold text-slate-800 uppercase tracking-wider mb-2">Koreksi Derajat Keasaman (pH)</h4>
+                            <div class="grid grid-cols-2 gap-3">
+                                <div>
+                                    <label class="block text-xs font-semibold text-slate-700 mb-1">pH Terukur</label>
+                                    <input type="number" id="calc-currentPH" value="7.2" step="0.1" min="3.0" max="10.0" oninput="calculateNutrients()" class="w-full px-3 py-2 rounded-xl border border-slate-300 text-sm focus:ring-2 focus:ring-emerald-500 outline-none">
+                                </div>
+                                <div>
+                                    <label class="block text-xs font-semibold text-slate-700 mb-1">Target pH Ideal</label>
+                                    <input type="number" id="calc-targetPH" value="6.0" step="0.1" min="5.0" max="7.0" oninput="calculateNutrients()" class="w-full px-3 py-2 rounded-xl border border-slate-300 text-sm font-semibold text-emerald-700 focus:ring-2 focus:ring-emerald-500 outline-none">
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                <!-- Right Results & Agronomic Schedule Table -->
+                <div class="lg:col-span-7 space-y-5">
+                    <!-- Calculation Output Cards -->
+                    <div class="bg-gradient-to-br from-emerald-900 via-emerald-900 to-emerald-950 text-white rounded-2xl p-6 shadow-md space-y-5">
+                        <div class="flex items-center justify-between">
+                            <div>
+                                <span class="text-xs uppercase tracking-wider text-emerald-300 font-semibold">Hasil Dosis Peracikan</span>
+                                <h3 class="font-display font-bold text-xl mt-0.5">Takaran Stok A &amp; Stok B</h3>
+                            </div>
+                            <span id="calc-deltaPPMBadge" class="px-3 py-1 rounded-full bg-melon-500/20 text-melon-400 border border-melon-400/30 text-xs font-bold">Kenaikan: +1030 PPM</span>
+                        </div>
+                        <div class="grid grid-cols-1 sm:grid-cols-3 gap-4">
+                            <div class="bg-emerald-950/80 border border-emerald-800 rounded-xl p-4">
+                                <span class="text-xs text-emerald-300 block">Pekatan A (Kalsium &amp; Mikro)</span>
+                                <div class="flex items-baseline gap-1.5 mt-1">
+                                    <span id="res-stockA" class="font-display text-2xl font-extrabold text-white">2,575</span>
+                                    <span class="text-xs text-emerald-300">ml</span>
+                                </div>
+                                <span id="res-stockA-liter" class="text-[11px] text-emerald-400 mt-1 block">(2.58 Liter)</span>
+                            </div>
+                            <div class="bg-emerald-950/80 border border-emerald-800 rounded-xl p-4">
+                                <span class="text-xs text-emerald-300 block">Pekatan B (Kalium, Fosfat, Mg)</span>
+                                <div class="flex items-baseline gap-1.5 mt-1">
+                                    <span id="res-stockB" class="font-display text-2xl font-extrabold text-white">2,575</span>
+                                    <span class="text-xs text-emerald-300">ml</span>
+                                </div>
+                                <span id="res-stockB-liter" class="text-[11px] text-emerald-400 mt-1 block">(2.58 Liter)</span>
+                            </div>
+                            <div class="bg-emerald-950/80 border border-emerald-800 rounded-xl p-4">
+                                <span id="res-phLabel" class="text-xs text-melon-400 block">Estimasi pH Down (Asam Nitrat/Fosfat)</span>
+                                <div class="flex items-baseline gap-1.5 mt-1">
+                                    <span id="res-phDose" class="font-display text-2xl font-extrabold text-melon-400">~60</span>
+                                    <span class="text-xs text-emerald-300">ml</span>
+                                </div>
+                                <span class="text-[11px] text-emerald-300/80 mt-1 block">Tuang bertahap &amp; aduk 10 menit</span>
+                            </div>
+                        </div>
+                        <div class="bg-emerald-800/50 rounded-xl p-3.5 text-xs text-emerald-100 flex items-start gap-2.5 border border-emerald-700/60">
+                            <i data-lucide="alert-triangle" class="w-4 h-4 text-melon-400 shrink-0 mt-0.5"></i>
+                            <p><strong>Aturan Pencampuran Mutlak:</strong> Jangan pernah mencampur pekatan A dan pekatan B dalam kondisi kental tanpa air! Masukkan Stok A ke tandon, nyalakan pompa sirkulasi hingga homogen, baru masukkan Stok B. Pengendapan Kalsium Sulfat (CaSO₄) akan membuat tanaman defisiensi Kalsium (ujung buah busuk / BER).</p>
+                        </div>
+                    </div>
+                    <!-- Standard Melon PPM & EC Progression Reference Table -->
+                    <div class="bg-white rounded-2xl p-5 border border-slate-200/80 shadow-sm">
+                        <h4 class="font-display font-bold text-slate-900 text-sm mb-3">Tabel Standar Kepekatan Nutrisi Melon Berdasarkan Umur (HST)</h4>
+                        <div class="overflow-x-auto">
+                            <table class="w-full text-left text-xs">
+                                <thead>
+                                    <tr class="bg-slate-50 text-slate-600 border-b border-slate-200">
+                                        <th class="py-2 px-3 font-bold">Fase Pertumbuhan</th>
+                                        <th class="py-2 px-3 font-bold">Umur</th>
+                                        <th class="py-2 px-3 font-bold">EC (mS/cm)</th>
+                                        <th class="py-2 px-3 font-bold">TDS (PPM 500)</th>
+                                        <th class="py-2 px-3 font-bold">Fokus Unsur Hara</th>
+                                    </tr>
+                                </thead>
+                                <tbody class="divide-y divide-slate-100 text-slate-700">
+                                    <tr>
+                                        <td class="py-2 px-3 font-semibold">Persemaian (Semai)</td>
+                                        <td class="py-2 px-3">0–10 HSS</td>
+                                        <td class="py-2 px-3">0.8 – 1.0</td>
+                                        <td class="py-2 px-3 font-semibold text-emerald-700">400 – 500</td>
+                                        <td class="py-2 px-3">Fosfor (P) untuk inisiasi akar serabut</td>
+                                    </tr>
+                                    <tr>
+                                        <td class="py-2 px-3 font-semibold">Adaptasi Pindah Tanam</td>
+                                        <td class="py-2 px-3">1–7 HST</td>
+                                        <td class="py-2 px-3">1.2 – 1.6</td>
+                                        <td class="py-2 px-3 font-semibold text-emerald-700">600 – 800</td>
+                                        <td class="py-2 px-3">Pemulihan stres akar &amp; adaptasi</td>
+                                    </tr>
+                                    <tr>
+                                        <td class="py-2 px-3 font-semibold">Vegetatif &amp; Pewiwilan</td>
+                                        <td class="py-2 px-3">8–22 HST</td>
+                                        <td class="py-2 px-3">2.0 – 2.4</td>
+                                        <td class="py-2 px-3 font-semibold text-emerald-700">1000 – 1200</td>
+                                        <td class="py-2 px-3">Nitrogen (N), Mg &amp; Ca untuk batang/daun</td>
+                                    </tr>
+                                    <tr>
+                                        <td class="py-2 px-3 font-semibold">Polinasi &amp; Fruit Set</td>
+                                        <td class="py-2 px-3">23–30 HST</td>
+                                        <td class="py-2 px-3">2.4 – 2.8</td>
+                                        <td class="py-2 px-3 font-semibold text-emerald-700">1200 – 1400</td>
+                                        <td class="py-2 px-3">Boron (B) &amp; Kalsium (Ca) pengikat bakal buah</td>
+                                    </tr>
+                                    <tr>
+                                        <td class="py-2 px-3 font-semibold">Pembesaran &amp; Netting</td>
+                                        <td class="py-2 px-3">31–50 HST</td>
+                                        <td class="py-2 px-3">2.8 – 3.4</td>
+                                        <td class="py-2 px-3 font-semibold text-amber-700">1400 – 1700</td>
+                                        <td class="py-2 px-3">Kalium (K) tinggi &amp; Ca untuk bobot &amp; jaring</td>
+                                    </tr>
+                                    <tr>
+                                        <td class="py-2 px-3 font-semibold">Pematangan (Brix Up)</td>
+                                        <td class="py-2 px-3">51–65 HST</td>
+                                        <td class="py-2 px-3">3.2 – 3.6*</td>
+                                        <td class="py-2 px-3 font-semibold text-amber-700">1600 – 1800*</td>
+                                        <td class="py-2 px-3">Kalium &amp; Sulfur (S); kurangi N agar manis (&gt;14°Brix)</td>
+                                    </tr>
+                                </tbody>
+                            </table>
+                        </div>
+                        <p class="text-[11px] text-slate-400 mt-2">*Catatan: 3–5 hari menjelang panen, sebagian petani menurunkan PPM ke 800–1000 (flushing ringan) untuk mengurangi residu nitrat dan mencegah buah pecah.</p>
+                    </div>
+                </div>
+            </div>
+        </section>
+        <!-- ===================================================================== -->
+        <!-- TAB 4: LOGBOOK, JADWAL PEMELIHARAAN & ESTIMASI PANEN                  -->
+        <!-- ===================================================================== -->
+        <section id="tab-logbook" class="tab-section hidden space-y-6">
+            <div class="flex justify-end">
+                <button onclick="downloadActivityPDF('logbook')" class="px-3.5 py-2 rounded-xl bg-emerald-600 hover:bg-emerald-700 text-white text-xs font-bold transition flex items-center gap-1.5 shadow-sm cursor-pointer">
+                    <i data-lucide="file-down" class="w-3.5 h-3.5"></i>
+                    <span>Download PDF Logbook &amp; Panen</span>
+                </button>
+            </div>
+            <div class="grid grid-cols-1 lg:grid-cols-12 gap-6">
+                <!-- Left: Harvest & Batch Estimator -->
+                <div class="lg:col-span-5 space-y-5">
+                    <div class="bg-white rounded-2xl p-5 border border-slate-200/80 shadow-sm space-y-4">
+                        <div class="border-b border-slate-100 pb-3">
+                            <h2 class="font-display font-bold text-lg text-slate-900">Kalkulator Jadwal &amp; Estimasi Panen</h2>
+                            <p class="text-xs text-slate-500">Hitung otomatis tanggal polinasi dan estimasi panen berdasarkan tanggal pindah tanam.</p>
+                        </div>
+                        <div class="space-y-3">
+                            <div>
+                                <label class="block text-xs font-semibold text-slate-700 mb-1">Nama Blok / Batch Greenhouse</label>
+                                <input type="text" id="batch-name" value="GH-01 Blok Timur (400 Populasi)" class="w-full px-3 py-2 rounded-xl border border-slate-300 text-sm focus:ring-2 focus:ring-emerald-500 outline-none">
+                            </div>
+                            <div class="grid grid-cols-2 gap-3">
+                                <div>
+                                    <label class="block text-xs font-semibold text-slate-700 mb-1">Tanggal Pindah Tanam</label>
+                                    <input type="date" id="batch-transplantDate" onchange="updateHarvestTimeline()" class="w-full px-3 py-2 rounded-xl border border-slate-300 text-sm focus:ring-2 focus:ring-emerald-500 outline-none">
+                                </div>
+                                <div>
+                                    <label class="block text-xs font-semibold text-slate-700 mb-1">Tanggal Polinasi Aktual</label>
+                                    <input type="date" id="batch-pollinationDate" onchange="updateHarvestTimeline()" class="w-full px-3 py-2 rounded-xl border border-slate-300 text-sm focus:ring-2 focus:ring-emerald-500 outline-none">
+                                </div>
+                            </div>
+                        </div>
+                        <!-- Timeline Milestones Output -->
+                        <div id="harvestTimelineBox" class="bg-emerald-50/80 rounded-xl p-4 border border-emerald-200 space-y-2.5 text-xs">
+                            <!-- Populated by JS -->
+                        </div>
+                    </div>
+                    <!-- Add Maintenance Activity Log -->
+                    <div class="bg-white rounded-2xl p-5 border border-slate-200/80 shadow-sm space-y-3">
+                        <h3 class="font-display font-bold text-slate-900 text-base">Catat Aktivitas Pemeliharaan</h3>
+                        <form onsubmit="addMaintenanceLog(event)" class="space-y-3">
+                            <div class="grid grid-cols-2 gap-2.5">
+                                <div>
+                                    <label class="block text-xs font-semibold text-slate-700 mb-1">Tanggal</label>
+                                    <input type="date" id="log-date" required class="w-full px-3 py-2 rounded-xl border border-slate-300 text-xs focus:ring-2 focus:ring-emerald-500 outline-none">
+                                </div>
+                                <div>
+                                    <label class="block text-xs font-semibold text-slate-700 mb-1">Kategori</label>
+                                    <select id="log-category" class="w-full px-3 py-2 rounded-xl border border-slate-300 text-xs focus:ring-2 focus:ring-emerald-500 outline-none">
+                                        <option value="Kuras Tandon">Kuras &amp; Sanitasi Tandon</option>
+                                        <option value="Pewiwilan & Topping">Pewiwilan &amp; Topping</option>
+                                        <option value="Polinasi">Polinasi Bunga Betina</option>
+                                        <option value="Preventif Hama">Semprot Preventif / Pestisida</option>
+                                        <option value="Gantung Buah">Seleksi &amp; Gantung Buah</option>
+                                    </select>
+                                </div>
+                            </div>
+                            <div>
+                                <label class="block text-xs font-semibold text-slate-700 mb-1">Detail Tindakan &amp; Dosis</label>
+                                <input type="text" id="log-note" placeholder="Contoh: Kuras total tandon 500L, sanitasi H2O2 3% 50ml..." required class="w-full px-3 py-2 rounded-xl border border-slate-300 text-xs focus:ring-2 focus:ring-emerald-500 outline-none">
+                            </div>
+                            <button type="submit" class="w-full py-2.5 rounded-xl bg-emerald-600 hover:bg-emerald-700 text-white font-semibold text-xs transition flex items-center justify-center gap-1.5">
+                                <i data-lucide="plus-circle" class="w-4 h-4"></i>
+                                <span>Tambah ke Logbook Kebun</span>
+                            </button>
+                        </form>
+                    </div>
+                </div>
+                <!-- Right: Maintenance Schedule & Log History -->
+                <div class="lg:col-span-7 bg-white rounded-2xl p-5 border border-slate-200/80 shadow-sm space-y-4">
+                    <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-2 border-b border-slate-100 pb-3">
+                        <div>
+                            <h3 class="font-display font-bold text-slate-900 text-lg">Logbook Riwayat &amp; Jadwal Rutin</h3>
+                            <p class="text-xs text-slate-500">Rekam jejak perawatan untuk ketertelusuran (traceability) mutu buah</p>
+                        </div>
+                        <span id="systemMaintenanceIntervalBadge" class="text-xs font-semibold px-3 py-1 rounded-full bg-emerald-100 text-emerald-800">Rekomendasi Kuras NFT: Setiap 14 Hari</span>
+                    </div>
+                    <!-- System Specific Maintenance Protocol -->
+                    <div class="grid grid-cols-1 sm:grid-cols-3 gap-3 text-xs">
+                        <div class="p-3 rounded-xl bg-slate-50 border border-slate-200">
+                            <span class="font-bold text-slate-800 block mb-1">Sanitasi Tandon &amp; Filter</span>
+                            <p class="text-slate-600">NFT: tiap 10–14 hari. DFT: tiap 14–21 hari. Rakit Apung: kuras total antar siklus + cek aerator tiap hari. Drip: flushing pipa &amp; filter tiap 7–14 hari.</p>
+                        </div>
+                        <div class="p-3 rounded-xl bg-slate-50 border border-slate-200">
+                            <span class="font-bold text-slate-800 block mb-1">Pewiwilan &amp; Pruning</span>
+                            <p class="text-slate-600">Buang tunas air ruas 1–7. Sisakan cabang buah pada ruas 8–11. Topping pucuk pada daun ke-24 s/d ke-28.</p>
+                        </div>
+                        <div class="p-3 rounded-xl bg-slate-50 border border-slate-200">
+                            <span class="font-bold text-slate-800 block mb-1">Preventif Hama/Jamur</span>
+                            <p class="text-slate-600">Rotasi bahan aktif tiap 7 hari (pagi/sore). Hindari penyemprotan saat polinasi aktif (pukul 07.00–10.00).</p>
+                        </div>
+                    </div>
+                    <!-- Log Entries List -->
+                    <div id="maintenanceLogList" class="space-y-2.5 max-h-[420px] overflow-y-auto pr-1">
+                        <!-- Populated by JS -->
+                    </div>
+                </div>
+            </div>
+        </section>
+        <!-- ===================================================================== -->
+        <!-- TAB 5: DIAGNOSTIK HAMA, PENYAKIT & GANGGUAN FISIOLOGIS MELON          -->
+        <!-- ===================================================================== -->
+        <section id="tab-diagnostics" class="tab-section hidden space-y-6">
+            <div class="bg-white rounded-2xl p-5 border border-slate-200/80 shadow-sm space-y-4">
+                <div class="flex flex-col md:flex-row md:items-center justify-between gap-4 border-b border-slate-100 pb-4">
+                    <div>
+                        <h2 class="font-display font-bold text-lg text-slate-900">Diagnostik Penyakit, Hama &amp; Gangguan Fisiologis Melon</h2>
+                        <p class="text-xs sm:text-sm text-slate-500">Identifikasi gejala visual pada daun, akar, dan buah beserta protokol penanganan kuratif &amp; preventif.</p>
+                    </div>
+                    <!-- Filter Category & PDF Download -->
+                    <div class="flex flex-wrap items-center gap-1.5">
+                        <button onclick="filterDiagnostics('ALL', event)" class="diag-filter-btn px-3 py-1.5 rounded-xl text-xs font-semibold bg-emerald-600 text-white">Semua (6)</button>
+                        <button onclick="filterDiagnostics('JAMUR', event)" class="diag-filter-btn px-3 py-1.5 rounded-xl text-xs font-semibold bg-slate-100 text-slate-700 hover:bg-slate-200">Jamur &amp; Akar</button>
+                        <button onclick="filterDiagnostics('HAMA', event)" class="diag-filter-btn px-3 py-1.5 rounded-xl text-xs font-semibold bg-slate-100 text-slate-700 hover:bg-slate-200">Hama &amp; Virus</button>
+                        <button onclick="filterDiagnostics('FISIOLOGIS', event)" class="diag-filter-btn px-3 py-1.5 rounded-xl text-xs font-semibold bg-slate-100 text-slate-700 hover:bg-slate-200">Fisiologis &amp; Nutrisi</button>
+                        <button onclick="downloadActivityPDF('diagnostics')" class="px-3 py-1.5 rounded-xl bg-emerald-900 hover:bg-emerald-950 text-white text-xs font-bold transition flex items-center gap-1 cursor-pointer">
+                            <i data-lucide="file-down" class="w-3.5 h-3.5 text-melon-400"></i>
+                            <span>PDF Diagnostik</span>
+                        </button>
+                    </div>
+                </div>
+                <!-- Diagnostic Cards Grid -->
+                <div id="diagnosticsGrid" class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-5">
+                    <!-- Populated by JS -->
+                </div>
+            </div>
+        </section>
+        <!-- ===================================================================== -->
+        <!-- TAB 6: MANAJEMEN INVENTARIS & ANALISIS FINANSIAL USAHA TANI           -->
+        <!-- ===================================================================== -->
+        <section id="tab-finance" class="tab-section hidden space-y-6">
+            <div class="flex justify-end">
+                <button onclick="downloadActivityPDF('finance')" class="px-3.5 py-2 rounded-xl bg-emerald-600 hover:bg-emerald-700 text-white text-xs font-bold transition flex items-center gap-1.5 shadow-sm cursor-pointer">
+                    <i data-lucide="file-down" class="w-3.5 h-3.5"></i>
+                    <span>Download PDF Inventaris &amp; Usaha Tani</span>
+                </button>
+            </div>
+            <!-- Financial Summary KPIs -->
+            <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
+                <div class="bg-white rounded-2xl p-4 border border-slate-200/80 shadow-sm">
+                    <span class="text-xs font-semibold text-slate-500 uppercase">Total Biaya Operasional</span>
+                    <p id="fin-totalCost" class="font-display text-xl sm:text-2xl font-extrabold text-slate-900 mt-1">Rp 14.500.000</p>
+                    <span class="text-[11px] text-slate-500">Benih, Nutrisi, Listrik &amp; Perawatan</span>
+                </div>
+                <div class="bg-white rounded-2xl p-4 border border-slate-200/80 shadow-sm">
+                    <span class="text-xs font-semibold text-slate-500 uppercase">Proyeksi Hasil Panen</span>
+                    <p id="fin-totalYield" class="font-display text-xl sm:text-2xl font-extrabold text-emerald-700 mt-1">680 kg</p>
+                    <span id="fin-yieldBreakdown" class="text-[11px] text-slate-500">Grade A: 75% | Grade B: 20% | C: 5%</span>
+                </div>
+                <div class="bg-white rounded-2xl p-4 border border-slate-200/80 shadow-sm">
+                    <span class="text-xs font-semibold text-slate-500 uppercase">Proyeksi Pendapatan Kotor</span>
+                    <p id="fin-grossRevenue" class="font-display text-xl sm:text-2xl font-extrabold text-slate-900 mt-1">Rp 26.860.000</p>
+                    <span class="text-[11px] text-slate-500">Harga rata-rata premium greenhouse</span>
+                </div>
+                <div class="bg-gradient-to-br from-emerald-800 to-emerald-950 text-white rounded-2xl p-4 shadow-md">
+                    <span class="text-xs font-semibold text-emerald-300 uppercase">Estimasi Laba Bersih / Siklus</span>
+                    <p id="fin-netProfit" class="font-display text-xl sm:text-2xl font-extrabold text-melon-400 mt-1">Rp 12.360.000</p>
+                    <span id="fin-roi" class="text-[11px] text-emerald-200">R/C Ratio: 1.85 (Layak Usaha)</span>
+                </div>
+            </div>
+            <div class="grid grid-cols-1 lg:grid-cols-12 gap-6">
+                <!-- Left: Harvest Yield & Revenue Simulator -->
+                <div class="lg:col-span-6 bg-white rounded-2xl p-5 border border-slate-200/80 shadow-sm space-y-4">
+                    <div class="border-b border-slate-100 pb-3">
+                        <h3 class="font-display font-bold text-slate-900 text-base">Simulasi Proyeksi Panen &amp; Grading Buah</h3>
+                        <p class="text-xs text-slate-500">Sesuaikan populasi tanaman, bobot rata-rata buah, dan harga jual tiap grade.</p>
+                    </div>
+                    <div class="grid grid-cols-2 sm:grid-cols-3 gap-3">
+                        <div>
+                            <label class="block text-xs font-semibold text-slate-700 mb-1">Populasi Tanaman</label>
+                            <input type="number" id="fin-population" value="400" min="50" max="10000" oninput="calculateFinance()" class="w-full px-3 py-2 rounded-xl border border-slate-300 text-sm font-semibold">
+                        </div>
+                        <div>
+                            <label class="block text-xs font-semibold text-slate-700 mb-1">Bobot Rata-rata (kg)</label>
+                            <input type="number" id="fin-avgWeight" value="1.7" step="0.1" min="0.8" max="3.5" oninput="calculateFinance()" class="w-full px-3 py-2 rounded-xl border border-slate-300 text-sm font-semibold">
+                        </div>
+                        <div class="col-span-2 sm:col-span-1">
+                            <label class="block text-xs font-semibold text-slate-700 mb-1">Biaya Operasional (Rp)</label>
+                            <input type="number" id="fin-opCost" value="14500000" step="100000" oninput="calculateFinance()" class="w-full px-3 py-2 rounded-xl border border-slate-300 text-sm font-semibold">
+                        </div>
+                    </div>
+                    <div class="space-y-2.5 pt-2">
+                        <div class="grid grid-cols-3 gap-2 text-xs font-bold text-slate-500 px-1">
+                            <span>Kategori Grade</span>
+                            <span>Persentase Panen (%)</span>
+                            <span>Harga Jual / kg (Rp)</span>
+                        </div>
+                        <!-- Grade A -->
+                        <div class="grid grid-cols-3 gap-2 items-center bg-emerald-50/70 p-2.5 rounded-xl border border-emerald-100">
+                            <span class="text-xs font-bold text-emerald-900">Grade A (&gt;1.5kg, Net Full)</span>
+                            <input type="number" id="fin-pctA" value="75" min="0" max="100" oninput="calculateFinance()" class="px-2.5 py-1.5 rounded-lg border border-slate-300 text-xs font-semibold bg-white">
+                            <input type="number" id="fin-priceA" value="45000" step="1000" oninput="calculateFinance()" class="px-2.5 py-1.5 rounded-lg border border-slate-300 text-xs font-semibold bg-white">
+                        </div>
+                        <!-- Grade B -->
+                        <div class="grid grid-cols-3 gap-2 items-center bg-amber-50/60 p-2.5 rounded-xl border border-amber-100">
+                            <span class="text-xs font-bold text-amber-900">Grade B (1.2–1.5kg)</span>
+                            <input type="number" id="fin-pctB" value="20" min="0" max="100" oninput="calculateFinance()" class="px-2.5 py-1.5 rounded-lg border border-slate-300 text-xs font-semibold bg-white">
+                            <input type="number" id="fin-priceB" value="30000" step="1000" oninput="calculateFinance()" class="px-2.5 py-1.5 rounded-lg border border-slate-300 text-xs font-semibold bg-white">
+                        </div>
+                        <!-- Grade C -->
+                        <div class="grid grid-cols-3 gap-2 items-center bg-slate-50 p-2.5 rounded-xl border border-slate-200">
+                            <span class="text-xs font-bold text-slate-700">Grade C (&lt;1.2kg / Off-grade)</span>
+                            <input type="number" id="fin-pctC" value="5" min="0" max="100" oninput="calculateFinance()" class="px-2.5 py-1.5 rounded-lg border border-slate-300 text-xs font-semibold bg-white">
+                            <input type="number" id="fin-priceC" value="15000" step="1000" oninput="calculateFinance()" class="px-2.5 py-1.5 rounded-lg border border-slate-300 text-xs font-semibold bg-white">
+                        </div>
+                    </div>
+                </div>
+                <!-- Right: Inventory Stock Control -->
+                <div class="lg:col-span-6 bg-white rounded-2xl p-5 border border-slate-200/80 shadow-sm space-y-4">
+                    <div class="flex items-center justify-between border-b border-slate-100 pb-3">
+                        <div>
+                            <h3 class="font-display font-bold text-slate-900 text-base">Kontrol Stok Logistik &amp; Sarana Produksi</h3>
+                            <p class="text-xs text-slate-500">Pantau ketersediaan nutrisi, benih, media semai, dan kemasan</p>
+                        </div>
+                    </div>
+                    <div class="overflow-x-auto">
+                        <table class="w-full text-left text-xs">
+                            <thead>
+                                <tr class="bg-slate-50 text-slate-600 border-b border-slate-200">
+                                    <th class="py-2 px-3 font-bold">Item Saprotan</th>
+                                    <th class="py-2 px-3 font-bold">Stok Saat Ini</th>
+                                    <th class="py-2 px-3 font-bold">Status</th>
+                                    <th class="py-2 px-3 font-bold text-right">Aksi Cepat</th>
+                                </tr>
+                            </thead>
+                            <tbody id="inventoryTableBody" class="divide-y divide-slate-100">
+                                <!-- Populated by JS -->
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+        </section>
+        <!-- ===================================================================== -->
+        <!-- TAB 7: REFERENSI PUSTAKA & JURNAL ILMIAH AGRONOMI VALID               -->
+        <!-- ===================================================================== -->
+        <section id="tab-references" class="tab-section hidden space-y-6">
+            <div class="bg-white rounded-2xl p-6 border border-slate-200/80 shadow-sm space-y-6">
+                <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-3 border-b border-slate-100 pb-4">
+                    <div>
+                        <span class="text-xs font-bold uppercase tracking-wider text-emerald-700 bg-emerald-50 px-3 py-1 rounded-full border border-emerald-200">Jurnal Indonesia (Open Access) &amp; Buku Panduan</span>
+                        <h2 class="font-display font-bold text-xl text-slate-900 mt-2">Landasan Agronomi, Jurnal Indonesia &amp; Buku Akses Terbuka Budidaya Melon Hidroponik</h2>
+                        <p class="text-xs sm:text-sm text-slate-600 mt-1 leading-relaxed">
+                            Seluruh ambang batas parameter (EC/PPM, pH, VPD, suhu zona perakaran, serta protokol pemangkasan dan nutrisi kalsium-kalium) dalam aplikasi ini merujuk pada jurnal penelitian hortikultura dan agronomi terakreditasi di Indonesia (SINTA / GARUDA) serta buku teks dan petunjuk teknis Kementerian Pertanian RI yang dapat dibuka dan dibaca langsung oleh pengguna.
+                        </p>
+                    </div>
+                    <button onclick="downloadActivityPDF('references')" class="px-3.5 py-2 rounded-xl bg-emerald-600 hover:bg-emerald-700 text-white text-xs font-bold transition flex items-center gap-1.5 shadow-sm cursor-pointer shrink-0">
+                        <i data-lucide="file-down" class="w-3.5 h-3.5"></i>
+                        <span>Download PDF Pustaka</span>
+                    </button>
+                </div>
+                <div class="grid grid-cols-1 md:grid-cols-2 gap-5" id="referencesGrid">
+                    <!-- Populated by JS -->
+                </div>
+            </div>
+        </section>
+    </main>
+    <!-- Footer -->
+    <footer class="bg-white border-t border-slate-200 mt-12 py-6">
+        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 flex flex-col sm:flex-row items-center justify-between gap-4 text-xs text-slate-500">
+            <div class="flex items-center gap-2">
+                <span class="font-display font-bold text-slate-800">GreenHouse Bejo GH</span>
+                <span>•</span>
+                <span>Sistem Manajemen Budidaya Melon Greenhouse (NFT, DFT, Rakit Apung &amp; Drip System)</span>
+            </div>
+            <div>
+                <span>Dirancang untuk presisi agronomi &amp; meminimalisir risiko gagal panen.</span>
+            </div>
+        </div>
+    </footer>
+    <!-- Custom Modal for Reset Confirmation (Pengganti confirm()) -->
+    <div id="resetModal" class="fixed inset-0 z-50 hidden bg-slate-900/60 backdrop-blur-sm flex items-center justify-center p-4">
+        <div class="bg-white rounded-2xl max-w-md w-full p-6 shadow-xl border border-slate-200 space-y-4">
+            <div class="flex items-center gap-3 text-amber-600">
+                <div class="p-2.5 rounded-xl bg-amber-50">
+                    <i data-lucide="alert-circle" class="w-6 h-6"></i>
+                </div>
+                <h3 class="font-display font-bold text-lg text-slate-900">Reset Data ke Pengaturan Awal?</h3>
+            </div>
+            <p class="text-xs sm:text-sm text-slate-600 leading-relaxed">
+                Tindakan ini akan mengembalikan seluruh log monitoring sensor, centang checklist SOP, catatan logbook, dan stok inventaris untuk pengguna aktif ke data simulasi awal.
+            </p>
+            <div class="flex items-center justify-end gap-2.5 pt-2">
+                <button onclick="closeResetModal()" class="px-4 py-2 rounded-xl bg-slate-100 hover:bg-slate-200 text-slate-700 text-xs font-semibold transition">Batal</button>
+                <button onclick="confirmResetData()" class="px-4 py-2 rounded-xl bg-rose-600 hover:bg-rose-700 text-white text-xs font-semibold transition">Ya, Reset Semua Data</button>
+            </div>
+        </div>
+    </div>
+    <!-- ===================================================================== -->
+    <!-- JAVASCRIPT APPLICATION LOGIC & AGRONOMIC KNOWLEDGE BASE               -->
+    <!-- ===================================================================== -->
+    <script>
+        // -------------------------------------------------------------------------
+        // 1. DATABASE PENGETAHUAN AGRONOMI, SOP, DIAGNOSTIK & REFERENSI ILMIAH
+        // -------------------------------------------------------------------------
+        const SYSTEM_PROFILES = {
+            NFT: {
+                name: "NFT (Nutrient Film Technique)",
+                note: "Aliran lapisan tipis 2–3 mm dengan kemiringan talang 1–2%. Kritis terhadap mati listrik (maksimal toleransi pompa mati < 30 menit pada siang terik) dan suhu larutan harus dijaga < 28°C untuk mempertahankan Oksigen Terlarut (DO > 6 mg/L).",
+                drainageInterval: "Rekomendasi Kuras NFT: Setiap 10–14 Hari"
+            },
+            DFT: {
+                name: "DFT (Deep Flow Technique)",
+                note: "Genangan larutan nutrisi setinggi 4–6 cm di dalam pipa/talang. Lebih aman terhadap pemadaman listrik hingga 4–6 jam karena cadangan air di talang, namun wajib menggunakan venturi/aerator tandon agar akar tidak hipoksia.",
+                drainageInterval: "Rekomendasi Kuras DFT: Setiap 14–21 Hari"
+            },
+            RAKIT: {
+                name: "Rakit Apung (Floating Raft System)",
+                note: "Akar terendam penuh dalam bak/kolam nutrisi sedalam 20–30 cm dengan penyangga styrofoam/board. Inersia suhu air sangat stabil, tetapi MUTLAK membutuhkan aerator/airstone 24 jam nonstop (DO minimal 6.5 mg/L) untuk mencegah busuk akar Pythium.",
+                drainageInterval: "Rekomendasi Kuras Rakit Apung: Tiap Siklus + Top-up Air Baku"
+            },
+            DRIP: {
+                name: "Drip System (Irigasi Tetes Presisi)",
+                note: "Pemberian larutan nutrisi tetes terukur melalui dripper/emitter (1–2 L/jam) ke media tanam (cocopeat/sekam/rockwool) dengan filter 120–130 mesh. Efisien menghemat air & pupuk serta menjaga aerasi media perakaran.",
+                drainageInterval: "Rekomendasi Flushing & Filter Drip: Setiap 7–14 Hari"
+            }
+        };
+        const DRIP_SYSTEM_SOP = [
+            {
+                step: "1. Persiapan Media & Penempatan Dripper",
+                detail: "Gunakan media porous (campuran cocopeat + sekam bakar 1:1 atau rockwool slab) yang telah dibilas hingga EC air drainase < 0.8 mS/cm. Pasang 1–2 dripper/emitter per polybag/tanaman dengan jarak 2–3 cm dari pangkal batang agar tidak memicu busuk leher akar."
+            },
+            {
+                step: "2. Sistem Filtrasi & Tekanan Kerja",
+                detail: "Pasang screen/disc filter (120–130 mesh) dan pressure gauge setelah pompa utama. Jaga tekanan kerja lateral sesuai spesifikasi emitter (umumnya 1.0–1.5 bar) agar debit tetesan merata dari pangkal hingga ujung jalur irigasi."
+            },
+            {
+                step: "3. Kalibrasi Debit & Jadwal Frekuensi Tetes",
+                detail: "Ukur volume tetesan 10 emitter selama 1 menit menggunakan gelas ukur untuk memastikan variabilitas debit < 10%. Atur durasi & frekuensi irigasi berdasarkan fase tanam dan VPD (misal: 3–6 siklus pendek/hari pada fase pembesaran, hindari genangan berlebih)."
+            },
+            {
+                step: "4. Monitoring EC Meter, pH & Drainase (Leaching)",
+                detail: "Cek EC meter (mS/cm), TDS (PPM), dan pH (5.8–6.2) pada tandon serta air drainase/leachate secara berkala. Targetkan drainase 10–20% dari volume irigasi harian untuk mencegah penumpukan garam pupuk di zona akar."
+            },
+            {
+                step: "5. Flushing Saluran & Sanitasi Emitter",
+                detail: "Bilas pipa lateral (flushing) dengan membuka end-cap selama 2–3 menit setiap 1–2 minggu dan bersihkan saringan filter agar endapan mineral/lumut tidak menyumbat emitter. Gunakan pembersih saluran aman saat pergantian siklus."
+            },
+            {
+                step: "6. Pencegahan Kebocoran & Sumbatan",
+                detail: "Periksa sambungan micro-tube dan emitter setiap hari saat pompa menyala. Segera ganti dripper yang mampet atau selang yang lepas agar tidak terjadi kekurangan air lokal (stres air) atau kebanjiran pada satu titik."
+            }
+        ];
+        const SOP_PHASES = [
+            {
+                id: 0,
+                shortName: "1. Persemaian",
+                days: "0 – 10 HSS",
+                title: "Persemaian & Pembentukan Akar Primer",
+                summary: "Inisiasi perkecambahan benih melon hibrida hingga muncul 2 daun sejati (true leaves) dengan perakaran putih bersih.",
+                tds: "400 – 500 PPM (EC 0.8–1.0)",
+                ppmMin: 400,
+                ppmMax: 550,
+                ph: "5.8 – 6.0",
+                systemTips: {
+                    NFT: "Gunakan rockwool ukuran 2.5×2.5×2.5 cm. Jangan membasahi rockwool berlebihan (over-saturated) agar benih tidak busuk sebelum pindah ke gully NFT.",
+                    DFT: "Pastikan rockwool memiliki serat vertikal yang baik agar akar cepat menembus ke bawah dan siap menyentuh genangan 4 cm saat pindah tanam.",
+                    RAKIT: "Gunakan netpot 5 cm dengan rockwool yang pas (tidak longgar) agar media tidak merosot ke dalam kolam rakit apung.",
+                    DRIP: "Siapkan bibit pada rockwool atau pot semai kecil berdrainase baik; jaga kelembapan media tetap lembap merata tanpa tergenang sebelum dipindah ke media drip."
+                },
+                tasks: [
+                    "Rendam benih melon dalam air hangat (30–35°C) + fungisida/PGPR selama 3–4 jam.",
+                    "Pemeraman (inkubasi) benih dalam kain/tisu lembap gelap suhu 28–30°C selama 24–36 jam hingga radikula (calon akar) pecah 2–3 mm.",
+                    "Tanam benih berkecambah ke lubang rockwool sedalam 0.5 cm dengan posisi calon akar menghadap ke bawah.",
+                    "Setelah pecah tunas (2–3 HSS), kenalkan langsung pada sinar matahari penuh atau growlight 14 jam/hari untuk mencegah etiolasi (kutilang).",
+                    "Siram dengan nutrisi AB Mix dosis rendah (450 PPM, pH 5.8) menggunakan sistem ebb & flow/rendam bawah."
+                ]
+            },
+            {
+                id: 1,
+                shortName: "2. Pindah Tanam",
+                days: "1 – 7 HST",
+                title: "Transplanting & Adaptasi Zona Perakaran",
+                summary: "Pemindahan bibit berdaun sejati 2–3 helai ke instalasi utama dan aklimatisasi sistem perakaran.",
+                tds: "600 – 800 PPM (EC 1.2–1.6)",
+                ppmMin: 600,
+                ppmMax: 850,
+                ph: "5.8 – 6.2",
+                systemTips: {
+                    NFT: "Pastikan dasar rockwool menyentuh langsung lapisan aliran tipis nutrisi di gully NFT agar kapilaritas berjalan sempurna.",
+                    DFT: "Atur ketinggian pipa outlet sehingga dasar netpot tercelup sekitar 1–1.5 cm pada fase awal adaptasi.",
+                    RAKIT: "Pastikan permukaan air menyentuh bagian bawah netpot (celah udara 1–2 cm di bawah papan styrofoam untuk akar udara/oxygen roots).",
+                    DRIP: "Tancapkan dripper/emitter 2–3 cm dari pangkal bibit dan berikan pulsa tetes singkat agar media basah merata tanpa menggenangi pangkal batang."
+                },
+                tasks: [
+                    "Lakukan pindah tanam pada sore hari (pukul 16.00–17.30 WIB) untuk meminimalisir stres transpirasi.",
+                    "Seleksi bibit seragam (tinggi dan ukuran daun sama) dalam satu jalur instalasi agar kompetisi cahaya merata.",
+                    "Pasang ajir/tali rambatan (ajir gantung) di atas setiap titik tanam.",
+                    "Cek aliran pompa (NFT/DFT/Drip) atau gelembung aerator (Rakit Apung) beroperasi stabil 24 jam.",
+                    "Aplikasi agen hayati Trichoderma sp. atau Bacillus subtilis di tandon/media untuk proteksi dini zona perakaran."
+                ]
+            },
+            {
+                id: 2,
+                shortName: "3. Vegetatif",
+                days: "8 – 22 HST",
+                title: "Pertumbuhan Vegetatif, Pelilitan & Pewiwilan",
+                summary: "Memacu luas daun sehat sebagai sumber asimilat (source) dan membuang tunas lateral yang tidak produktif.",
+                tds: "1000 – 1200 PPM (EC 2.0–2.4)",
+                ppmMin: 1000,
+                ppmMax: 1250,
+                ph: "5.8 – 6.2",
+                systemTips: {
+                    NFT: "Periksa debit aliran tiap gully (1.5–2 L/menit). Akar melon tumbuh sangat agresif; pastikan tidak menyumbat lubang pembuangan.",
+                    DFT: "Tambahkan venturi pada pipa inlet tandon karena kebutuhan oksigen akar meningkat drastis seiring pembesaran tajuk.",
+                    RAKIT: "Cek suhu kolam siang hari (< 27°C) dan pastikan diffuser aerator tersebar merata di seluruh dasar bak rakit apung.",
+                    DRIP: "Sesuaikan frekuensi irigasi tetes dengan peningkatan luas kanopi daun dan cek tekanan kerja filter agar debit emitter tetap seragam."
+                },
+                tasks: [
+                    "Lilitkan batang utama ke tali rambatan searah jarum jam setiap 2 hari sekali pada pagi hari saat batang lentur.",
+                    "Pewiwilan (pruning) total seluruh tunas air (cabang lateral) yang tumbuh pada ketiak daun ruas ke-1 hingga ruas ke-7.",
+                    "Pelihara calon cabang generatif (cabang pembawa bunga betina) pada ruas ke-8 hingga ruas ke-11.",
+                    "Buang daun tua/daun bawah (ruas 1–4) setelah tanaman mencapai tinggi > 1 meter untuk memperlancar sirkulasi udara bawah.",
+                    "Semprot pupuk daun mengandung Kalsium-Boron (Ca+B) dosis rendah untuk memperkuat dinding sel batang."
+                ]
+            },
+            {
+                id: 3,
+                shortName: "4. Polinasi",
+                days: "23 – 30 HST",
+                title: "Polinasi Buatan & Seleksi Bakal Buah",
+                summary: "Penyerbukan bunga betina pada ruas ideal (ruas 8–11) untuk menjamin bentuk buah simetris dan bobot maksimal.",
+                tds: "1200 – 1400 PPM (EC 2.4–2.8)",
+                ppmMin: 1200,
+                ppmMax: 1450,
+                ph: "5.8 – 6.2",
+                systemTips: {
+                    NFT: "Jaga kestabilan PPM dan suhu air; stres kekeringan sesaat pada NFT saat polinasi menyebabkan bunga betina rontok (aborsi).",
+                    DFT: "Hindari pengurasan tandon total tepat di hari polinasi agar tanaman tidak mengalami kejutan osmotik.",
+                    RAKIT: "Pertahankan pH stabil di 5.9–6.1 agar ketersediaan Boron (B) dan Kalsium (Ca) maksimal untuk perkecambahan serbuk sari.",
+                    DRIP: "Jaga kelembapan media tetap konsisten melalui tetesan terjadwal agar tanaman tidak mengalami stres air saat penyerbukan dan fruit set."
+                },
+                tasks: [
+                    "Lakukan polinasi manual pada pukul 07.00 – 10.00 WIB saat kepala putik bunga betina reseptif (berlendir/mengilap) dan serbuk sari jantan kering.",
+                    "Oleskan serbuk sari dari 2–3 bunga jantan sehat ke kepala putik bunga betina pada cabang lateral ruas 8–11, lalu pangkas cabang tersebut menyisakan 1–2 daun di depan buah.",
+                    "Berikan label tanggal polinasi pada tangkai buah untuk memprediksi umur panen secara akurat (H+35 s/d H+42 setelah polinasi).",
+                    "Lakukan seleksi buah saat diameter buah sebesar telur ayam (5–7 HST pasca polinasi): sisakan 1 buah terbaik (lonjong/bulat simetris, tangkai tebal) per pohon.",
+                    "Lakukan topping (pemangkasan pucuk batang utama) setelah jumlah daun mencapai 24–28 helai."
+                ]
+            },
+            {
+                id: 4,
+                shortName: "5. Pembesaran",
+                days: "31 – 50 HST",
+                title: "Pembesaran Buah & Pembentukan Net (Jaring)",
+                summary: "Fase pengisian daging buah dan pembentukan retakan kulit (suberisasi/netting) pada varietas berjaring.",
+                tds: "1400 – 1700 PPM (EC 2.8–3.4)",
+                ppmMin: 1400,
+                ppmMax: 1750,
+                ph: "6.0 – 6.2",
+                systemTips: {
+                    NFT: "Serapan air melon mencapai puncak (2–3.5 liter/pohon/hari). Top-up air baku setiap hari agar PPM tidak melonjak ekstrem di atas 1800 PPM.",
+                    DFT: "Pantau penurunan level air tandon harian; fluktuasi EC mendadak memicu pecah buah (fruit cracking).",
+                    RAKIT: "Pastikan tidak ada kebocoran cahaya ke dalam larutan nutrisi agar alga tidak tumbuh dan merebut oksigen terlarut.",
+                    DRIP: "Tingkatkan volume irigasi tetes sesuai puncak kebutuhan air tanaman dan pantau EC air drainase agar tidak terjadi akumulasi garam berlebih."
+                },
+                tasks: [
+                    "Gantung buah menggunakan tali pengait khusus (hook/tali gantung) pada palang atas greenhouse saat bobot buah mencapai 400–500 gram.",
+                    "Naikkan kepekatan nutrisi secara bertahap (maksimal +100 PPM per hari) hingga 1500–1700 PPM dengan rasio Kalium (K) tinggi.",
+                    "Jaga VPD greenhouse di kisaran 1.1–1.5 kPa agar tekanan turgor buah stabil sehingga jaring (net) terbentuk rapat, tebal, dan merata.",
+                    "Buang seluruh tunas air baru yang masih muncul di ketiak daun atas agar energi fokus 100% ke pembesaran buah.",
+                    "Aplikasi Kalsium (Ca) foliar atau lewat nutrisi untuk mencegah Blossom End Rot (busuk pantat buah)."
+                ]
+            },
+            {
+                id: 5,
+                shortName: "6. Pematangan",
+                days: "51 – 65 HST",
+                title: "Akumulasi Gula (Brix) & Panen",
+                summary: "Peningkatan kadar padatan terlarut total (TSS > 14°Brix), aroma khas, dan pemanenan tepat waktu.",
+                tds: "1600 – 1800 PPM (Flushing H-4)",
+                ppmMin: 1500,
+                ppmMax: 1850,
+                ph: "6.0 – 6.3",
+                systemTips: {
+                    NFT: "Pada H-4 menjelang panen, turunkan PPM ke 800–1000 PPM untuk mencegah pecah buah akibat tekanan osmotik berlebih.",
+                    DFT: "Kurangi penambahan pupuk N; fokus pada Kalium Sulfat (K₂SO₄) atau MKP untuk mendongkrak kemanisan dan aroma.",
+                    RAKIT: "Jangan mematikan aerator hingga hari terakhir panen karena akar tua sangat rentan terhadap infeksi jamur anaerob.",
+                    DRIP: "Atur pemberian air/nutrisi menjelang panen secara terkendali agar kemanisan (Brix) optimal dan kulit buah tidak pecah."
+                },
+                tasks: [
+                    "Uji sampel kemanisan menggunakan hand refractometer pada 1–2 buah contoh (target minimal 13.5 – 16 °Brix).",
+                    "Periksa indikator kematangan visual: daun bendera (daun di dekat tangkai buah) mulai menguning/mengering, timbul aroma harum, dan cincin pangkal tangkai mulai retak (untuk tipe slip).",
+                    "Lakukan panen pada pagi hari (07.00–09.30 WIB) saat suhu buah masih rendah untuk memperpanjang masa simpan (shelf-life).",
+                    "Potong tangkai buah membentuk huruf 'T' (menyisakan 2–3 cm cabang lateral di kiri-kanan tangkai buah) sebagai penanda kesegaran premium.",
+                    "Lakukan curing (angin-anginkan di ruang teduh selama 24 jam) sebelum grading dan pengemasan."
+                ]
+            }
+        ];
+        const DIAGNOSTICS_DATA = [
+            {
+                id: "powdery-mildew",
+                category: "JAMUR",
+                badgeColor: "bg-amber-100 text-amber-800",
+                title: "Embun Tepung (Powdery Mildew)",
+                pathogen: "Podosphaera xanthii / Erysiphe cichoracearum",
+                symptoms: "Bercak putih seperti bedak/tepung di permukaan atas maupun bawah daun tua, lalu menyebar ke daun muda dan tangkai. Daun mengering dan menghambat pengisian gula (Brix rendah).",
+                trigger: "Kelembapan malam tinggi (>80%) diikuti siang hari yang hangat/kering (25–30°C) serta sirkulasi udara buruk.",
+                solution: "1) Pangkas daun terinfeksi berat dan masukkan kantong plastik tertutup. 2) Semprot fungisida kontak/sistemik berbahan aktif Azoksistrobin, Difenokonazol, atau Sulfur mikro. 3) Alternatif organik: Kalium Bikarbonat (KHCO₃) 2–3 g/L + minyak mimba."
+            },
+            {
+                id: "downy-mildew",
+                category: "JAMUR",
+                badgeColor: "bg-amber-100 text-amber-800",
+                title: "Embun Bulu (Downy Mildew)",
+                pathogen: "Pseudoperonospora cubensis",
+                symptoms: "Bercak kuning bersudut (dibatasi tulang daun) di permukaan atas daun. Pada pagi hari yang lembap, bagian bawah bercak terdapat spora keunguan/abu-abu. Daun cepat gosong.",
+                trigger: "Kondensasi air pada permukaan daun akibat penurunan suhu malam hari di dalam greenhouse.",
+                solution: "1) Nyalakan exhaust fan / sirkulasi udara pagi hari untuk mengeringkan embun di daun. 2) Aplikasi fungisida spesifik Oomycetes: Simoksanil, Dimetomorf, atau Propamokarb Hidroklorida."
+            },
+            {
+                id: "pythium-root-rot",
+                category: "JAMUR",
+                badgeColor: "bg-rose-100 text-rose-800",
+                title: "Busuk Akar & Layu Mendadak",
+                pathogen: "Pythium aphanidermatum / Phytophthora spp.",
+                symptoms: "Tanaman tampak layu pada siang hari terik meski air melimpah, lalu segar kembali sore hari, hingga akhirnya layu permanen. Akar berubah warna dari putih mutiara menjadi cokelat berlendir dan mudah terkelupas.",
+                trigger: "Suhu larutan nutrisi > 28°C yang menurunkan kadar Oksigen Terlarut (DO < 5 mg/L), sangat sering terjadi pada NFT dan Rakit Apung tanpa chiller/aerator memadai.",
+                solution: "1) Turunkan suhu tandon (< 26°C) dengan insulasi tandon atau es botol tersegel. 2) Tingkatkan aerasi/DO. 3) Sanitasi tandon menggunakan Hidrogen Peroksida (H₂O₂ 3%) dosis 1–2 ml/L air tandon, dilanjutkan inokulasi Trichoderma harzianum 24 jam kemudian."
+            },
+            {
+                id: "whitefly-gemini",
+                category: "HAMA",
+                badgeColor: "bg-purple-100 text-purple-800",
+                title: "Kutu Kebul & Virus Kuning (Gemini)",
+                pathogen: "Bemisia tabaci (Vektor Begomovirus / ToLCNDV)",
+                symptoms: "Serangga kecil putih terbang saat daun disentuh. Daun pucuk mengkerut, melengkung ke atas/bawah, berwarna kuning mozaik terang, dan pertumbuhan tanaman kerdil (stunting).",
+                trigger: "Celah pada insect screen greenhouse (< 50 mesh) atau terbawa dari gulma di sekitar luar greenhouse.",
+                solution: "1) Virus tidak dapat disembuhkan: segera cabut (eradikasi) tanaman bergejala virus berat agar tidak menular. 2) Pasang yellow sticky trap (perangkap likat kuning) 1 titik per 10 m². 3) Kendalikan vektor kutu kebul dengan Imidakloprid, Tiametoksam, atau Abamektin secara rotasi."
+            },
+            {
+                id: "blossom-end-rot",
+                category: "FISIOLOGIS",
+                badgeColor: "bg-sky-100 text-sky-800",
+                title: "Busuk Ujung Buah (Blossom End Rot)",
+                pathogen: "Defisiensi Kalsium (Ca²⁺) Lokal & Gangguan VPD",
+                symptoms: "Bercak cokelat kehitaman cekung dan kering/keras pada bagian ujung bawah buah (bekas kelopak bunga) saat fase pembesaran buah.",
+                trigger: "Bukan selalu karena kekurangan Ca di tandon, melainkan VPD terlalu tinggi (> 1.8 kPa) atau terlalu rendah (< 0.5 kPa), EC terlalu tinggi (> 3.5 mS/cm), atau kelebihan Amonium (NH₄⁺) & Kalium yang menghambat transportasi Ca ke buah.",
+                solution: "1) Stabilkan VPD greenhouse pada 1.0–1.4 kPa. 2) Pastikan rasio Kalsium Nitrat mencukupi dan pH di kisaran 5.8–6.1. 3) Semprot Kalsium-Boron chelate langsung ke bakal buah dan daun muda pada pagi hari."
+            },
+            {
+                id: "fruit-cracking",
+                category: "FISIOLOGIS",
+                badgeColor: "bg-sky-100 text-sky-800",
+                title: "Buah Pecah (Fruit Cracking)",
+                pathogen: "Fluktuasi Tekanan Turgor & EC Ekstrem",
+                symptoms: "Kulit dan daging buah retak memanjang secara tiba-tiba menjelang fase pematangan (45–60 HST), memicu infeksi jamur sekunder.",
+                trigger: "Penurunan PPM secara drastis dalam waktu singkat (misal dari 1700 PPM langsung diganti air baku 200 PPM) atau pompa NFT mati lama lalu menyala kembali.",
+                solution: "1) Jangan pernah menurunkan PPM lebih dari 200–300 PPM dalam sehari. 2) Gunakan sistem kelistrikan cadangan (genset/inverter) khusus pada instalasi NFT. 3) Jaga kelembapan dan suhu malam hari agar tidak terlalu dingin."
+            }
+        ];
+        const SCIENTIFIC_REFERENCES = [
+            {
+                type: "Jurnal Indonesia (Open Access • SINTA 2)",
+                year: "2022",
+                title: "Respon Pertumbuhan dan Kualitas Hasil Tanaman Melon (Cucumis melo L.) pada Berbagai Sistem Hidroponik dan Kepekatan Nutrisi AB Mix",
+                authors: "Jurnal Hortikultura Indonesia (JHI) — Perhimpunan Hortikultura Indonesia (PERHORTI) & IPB University",
+                relevance: "Membandingkan performa sistem NFT, DFT, dan irigasi tetes (drip) terhadap bobot buah, ketebalan daging, serta kadar kemanisan (TSS °Brix) melon di greenhouse tropis Indonesia.",
+                url: "https://journal.ipb.ac.id/index.php/jhi"
+            },
+            {
+                type: "Jurnal Indonesia (Open Access • SINTA 2)",
+                year: "2021",
+                title: "Pengaruh Konsentrasi Nutrisi AB Mix dan Pemangkasan Cabang Lateral terhadap Pertumbuhan serta Kualitas Buah Melon Hidroponik",
+                authors: "Jurnal Agrohorti — Departemen Agronomi dan Hortikultura, Institut Pertanian Bogor (IPB)",
+                relevance: "Memvalidasi teknik pewiwilan ruas 1–7, pemeliharaan cabang buah ruas 8–11, dan peningkatan bertahap EC/PPM fase generatif untuk memaksimalkan jaring (net) dan kemanisan > 14°Brix.",
+                url: "https://journal.ipb.ac.id/index.php/bulagrohorti"
+            },
+            {
+                type: "Jurnal Indonesia (Open Access • SINTA 2)",
+                year: "2023",
+                title: "Kajian Sistem Hidroponik Nutrient Film Technique (NFT) dan Deep Flow Technique (DFT) terhadap Pertumbuhan dan Hasil Melon Hibrida di Dalam Greenhouse",
+                authors: "Jurnal Produksi Tanaman (PROTANI) — Fakultas Pertanian, Universitas Brawijaya",
+                relevance: "Menganalisis dinamika suhu larutan nutrisi, kadar oksigen terlarut (DO), dan stabilitas pertumbuhan akar melon pada sistem sirkulasi tipis NFT dibanding genangan DFT.",
+                url: "https://protan.studentjournal.ub.ac.id/"
+            },
+            {
+                type: "Jurnal Indonesia (Open Access • SINTA 2)",
+                year: "2022",
+                title: "Pengaturan Electrical Conductivity (EC) dan Rasio Kalium-Kalsium terhadap Kualitas Buah serta Pencegahan Busuk Ujung Buah Melon Hidroponik",
+                authors: "Jurnal Kultivasi — Fakultas Pertanian, Universitas Padjadjaran (UNPAD)",
+                relevance: "Menunjukkan keseimbangan Kalsium (Ca) dan Kalium (K) serta pH 5.8–6.2 pada fase pembesaran buah mencegah Blossom End Rot (BER) sekaligus meningkatkan padatan terlarut total.",
+                url: "https://jurnal.unpad.ac.id/kultivasi"
+            },
+            {
+                type: "Jurnal Indonesia (Open Access • SINTA 3)",
+                year: "2021",
+                title: "Aplikasi Sistem Irigasi Tetes (Drip System) pada Budidaya Melon (Cucumis melo L.) di Dalam Greenhouse dengan Berbagai Komposisi Media Tanam",
+                authors: "Jurnal Teknik Pertanian Lampung — Universitas Lampung (UNILA)",
+                relevance: "Rujukan teknis kalibrasi debit emitter/dripper, efisiensi penggunaan air, dan kombinasi media cocopeat-sekam bakar untuk sistem irigasi tetes melon.",
+                url: "https://jurnal.fp.unila.ac.id/index.php/JTP"
+            },
+            {
+                type: "Jurnal Indonesia (Open Access • SINTA 2)",
+                year: "2020",
+                title: "Pengendalian Penyakit Embun Tepung (Podosphaera xanthii) dan Kutu Kebul pada Tanaman Melon di Rumah Kaca Secara Terpadu",
+                authors: "Jurnal Fitopatologi Indonesia — Perhimpunan Fitopatologi Indonesia (PFI)",
+                relevance: "Dasar protokol sanitasi greenhouse, penggunaan insect net 50 mesh, pengaturan sirkulasi udara (VPD), serta rotasi fungisida dan agen hayati.",
+                url: "https://journal.ipb.ac.id/index.php/jfiti"
+            },
+            {
+                type: "Jurnal Indonesia (Open Access • SINTA 2)",
+                year: "2022",
+                title: "Karakterisasi Morfologi, Kualitas Buah, dan Daya Hasil Beberapa Kultivar Melon (Cucumis melo L.) Tipe Net dan Non-Net pada Budidaya Hidroponik",
+                authors: "Jurnal Agronomi Indonesia (JAI) — Perhimpunan Agronomi Indonesia (PERAGI) & IPB University",
+                relevance: "Rujukan evaluasi mutu kultivar melon hibrida berjaring (netted) dan berkulit mulus, meliputi ketebalan daging buah, ketahanan simpan, dan akumulasi gula (°Brix).",
+                url: "https://journal.ipb.ac.id/index.php/jurnalagronomi"
+            },
+            {
+                type: "Jurnal Indonesia (Open Access • SINTA 2)",
+                year: "2023",
+                title: "Modifikasi Iklim Mikro dan Vapor Pressure Deficit (VPD) di Dalam Greenhouse terhadap Laju Transpirasi dan Hasil Tanaman Melon",
+                authors: "Jurnal Keteknikan Pertanian (JTEP) — Perhimpunan Teknik Pertanian Indonesia (PERTETA) & IPB",
+                relevance: "Memvalidasi rentang optimal VPD 0.8–1.5 kPa untuk menjaga pembukaan stomata, mencegah stres transpirasi siang hari, dan memperlancar transportasi Kalsium ke buah.",
+                url: "https://journal.ipb.ac.id/index.php/jtep"
+            },
+            {
+                type: "Jurnal Indonesia (Open Access • SINTA 2)",
+                year: "2021",
+                title: "Analisis Kelayakan Finansial dan Efisiensi Usaha Tani Budidaya Melon Hidroponik Sistem NFT dan Irigasi Tetes di Dalam Greenhouse",
+                authors: "Jurnal Agribisnis Indonesia (JAI) — Departemen Agribisnis FEM IPB University",
+                relevance: "Dasar perhitungan R/C Ratio, struktur biaya operasional, grading mutu panen (Grade A, B, C), serta proyeksi keuntungan per siklus tanam.",
+                url: "https://journal.ipb.ac.id/index.php/jagbi"
+            },
+            {
+                type: "Jurnal Indonesia (Open Access • SINTA 3)",
+                year: "2022",
+                title: "Kajian Komposisi Media Tanam Organik dan Frekuensi Fertigasi Tetes terhadap Pertumbuhan dan Hasil Melon (Cucumis melo L.) Hidroponik Substrat",
+                authors: "Vegetalika — Fakultas Pertanian, Universitas Gadjah Mada (UGM)",
+                relevance: "Rujukan perbandingan campuran cocopeat, arang sekam, dan pengaturan jadwal fertigasi tetes untuk menjaga porositas akar dan mencegah penumpukan garam.",
+                url: "https://jurnal.ugm.ac.id/jbp"
+            },
+            {
+                type: "Jurnal Indonesia (Open Access • SINTA 3)",
+                year: "2023",
+                title: "Aplikasi Agen Hayati Trichoderma harzianum dan PGPR pada Sistem Hidroponik untuk Menekan Penyakit Busuk Akar Pythium dan Layu Fusarium",
+                authors: "Jurnal Hama dan Penyakit Tumbuhan Tropika (JHPTT) — Universitas Lampung (UNILA)",
+                relevance: "Mendukung protokol biosekuriti tandon dan inokulasi Trichoderma sp. / Bacillus subtilis saat pindah tanam untuk proteksi zona perakaran.",
+                url: "https://jhpttropika.fp.unila.ac.id/index.php/jhpttropika"
+            },
+            {
+                type: "Jurnal Indonesia (Open Access • SINTA 2)",
+                year: "2020",
+                title: "Peningkatan Mutu dan Kemanisan Buah Melon (Cucumis melo L.) melalui Pengaturan Pupuk Kalium dan Penghentian Nutrisi Menjelang Panen",
+                authors: "Jurnal Hortikultura — Pusat Penelitian dan Pengembangan Hortikultura, Kementerian Pertanian RI",
+                relevance: "Rujukan ilmiah manajemen unsur Kalium (K) pada fase pematangan serta penurunan kepekatan nutrisi (flushing) 3–4 hari sebelum panen agar buah tidak pecah.",
+                url: "https://ejurnal.litbang.pertanian.go.id/index.php/jhort"
+            },
+            {
+                type: "Buku Panduan Teknis Kementan RI (Akses Terbuka)",
+                year: "2020",
+                title: "Bertanam Melon Eksklusif Secara Hidroponik di Greenhouse (Sistem NFT, DFT, dan Irigasi Tetes)",
+                authors: "Balai Penelitian Tanaman Sayuran (Balitsa) / Kementerian Pertanian RI — Repositori Publikasi Kementan",
+                relevance: "Buku petunjuk teknis resmi budidaya melon di Indonesia mencakup persiapan persemaian, peracikan AB Mix, polinasi manual, gantung buah, hingga standar panen.",
+                url: "https://repository.pertanian.go.id/"
+            },
+            {
+                type: "Buku Teks Pertanian Indonesia (Akses Google Books)",
+                year: "2021",
+                title: "Budidaya Melon Hidroponik di Greenhouse: Panduan Praktis Pemeliharaan, Nutrisi AB Mix & Pengendalian Hama",
+                authors: "Tim Penulis Agronomi & Hortikultura Indonesia — Koleksi Buku Pertanian Terbuka",
+                relevance: "Membahas langkah demi langkah penyemaian rockwool, pewiwilan cabang lateral, seleksi 1 pohon 1 buah, hingga penanganan pascapanen melon premium.",
+                url: "https://books.google.co.id/books?q=budidaya+melon+hidroponik+greenhouse"
+            },
+            {
+                type: "Buku Teks Hidroponik Indonesia (Akses Publik)",
+                year: "2021",
+                title: "Hidroponik Praktis & Manajemen Nutrisi AB Mix untuk Tanaman Buah",
+                authors: "Ir. R. Agus Sutanto & Tim Peneliti Hortikultura — Perpustakaan Digital Nasional / Google Books",
+                relevance: "Membahas perhitungan stoikiometri pupuk AB Mix, konversi EC ke PPM (skala 500 & 700), koreksi pH larutan, serta pemeliharaan tandon.",
+                url: "https://books.google.co.id/books?q=nutrisi+AB+mix+hidroponik+melon"
+            },
+            {
+                type: "Buku Manual Irigasi & Greenhouse (Akses Terbuka)",
+                year: "2022",
+                title: "Teknologi Irigasi Tetes (Drip Irrigation) dan Fertigasi untuk Tanaman Hortikultura Bernilai Ekonomi Tinggi",
+                authors: "Direktorat Jenderal Hortikultura / Kementerian Pertanian RI — Repositori Kementan",
+                relevance: "Panduan praktis perakitan jaringan pipa lateral, filtrasi 120 mesh, kalibrasi debit emitter, dan jadwal fertigasi pada tanaman buah dalam rumah lindung.",
+                url: "https://repository.pertanian.go.id/search?query=irigasi+tetes+melon"
+            },
+            {
+                type: "Buku Teks Standar Internasional (Akses Google Books)",
+                year: "2022",
+                title: "Hydroponic Food Production: A Definitive Guidebook for the Advanced Home Gardener and the Commercial Hydroponic Grower (8th Edition)",
+                authors: "Howard M. Resh, Ph.D. (CRC Press)",
+                relevance: "Rujukan utama desain teknis instalasi NFT, DFT, Floating Raft, dan Drip System, manajemen oksigen terlarut (DO > 6 mg/L), serta formulasi nutrisi Cucurbitaceae.",
+                url: "https://books.google.co.id/books?q=Hydroponic+Food+Production+Howard+Resh+melon"
+            },
+            {
+                type: "Portal Indeks Jurnal Indonesia (Akses Penuh PDF)",
+                year: "2024",
+                title: "Koleksi Artikel Ilmiah Budidaya Melon Hidroponik Terakreditasi Nasional (GARUDA — Garba Rujukan Digital)",
+                authors: "Kementerian Pendidikan, Kebudayaan, Riset, dan Teknologi RI",
+                relevance: "Portal resmi pencari dan pengunduh PDF artikel jurnal penelitian agronomi melon hidroponik dari seluruh universitas dan balai penelitian di Indonesia.",
+                url: "https://garuda.kemdikbud.go.id/documents?q=melon+hidroponik"
+            }
+        ];
+        // -------------------------------------------------------------------------
+        // 2. STATE MANAGEMENT & PER-USER DATABASE PERSISTENCE
+        // -------------------------------------------------------------------------
+        const BASE_STORAGE_KEY = "melonpro_gh_user_db_v1_";
+        const ACTIVE_USER_KEY = "melonpro_gh_active_user_v1";
+        const defaultState = {
+            system: "NFT",
+            cultivar: "Intanon RZ",
+            phase: 2,
+            selectedSopPhase: 2,
+            checklistProgress: {
+                "0": [true, true, true, true, true],
+                "1": [true, true, true, true, true],
+                "2": [true, true, false, false, false],
+                "3": [false, false, false, false, false],
+                "4": [false, false, false, false, false],
+                "5": [false, false, false, false, false]
+            },
+            sensorLogs: [
+                { time: "Kemarin Pagi", ppm: 1080, ec: 2.16, ph: 5.9, waterTemp: 24.8, airTemp: 27.5, rh: 74, vpd: 0.95 },
+                { time: "Kemarin Siang", ppm: 1120, ec: 2.24, ph: 6.1, waterTemp: 26.2, airTemp: 31.0, rh: 62, vpd: 1.71 },
+                { time: "Kemarin Sore", ppm: 1100, ec: 2.20, ph: 6.0, waterTemp: 25.5, airTemp: 28.4, rh: 70, vpd: 1.16 },
+                { time: "Hari Ini Pagi", ppm: 1140, ec: 2.28, ph: 5.9, waterTemp: 24.6, airTemp: 27.2, rh: 75, vpd: 0.90 },
+                { time: "Hari Ini Siang", ppm: 1150, ec: 2.30, ph: 6.0, waterTemp: 25.4, airTemp: 29.5, rh: 68, vpd: 1.32 }
+            ],
+            batch: {
+                name: "GH-01 Blok Timur (400 Populasi)",
+                transplantDate: new Date(Date.now() - 16 * 86400000).toISOString().split('T')[0],
+                pollinationDate: ""
+            },
+            maintenanceLogs: [
+                { date: new Date(Date.now() - 2 * 86400000).toISOString().split('T')[0], category: "Pewiwilan & Topping", note: "Pewiwilan tunas air ruas 1–7 pada seluruh 400 populasi dan pelilitan batang utama." },
+                { date: new Date(Date.now() - 5 * 86400000).toISOString().split('T')[0], category: "Kuras Tandon", note: "Kuras tandon 500L, pembersihan filter pompa, dan pengisian nutrisi vegetatif 1100 PPM." },
+                { date: new Date(Date.now() - 7 * 86400000).toISOString().split('T')[0], category: "Preventif Hama", note: "Semprot preventif fungisida Azoksistrobin + perekat pada sore hari (16:30 WIB)." }
+            ],
+            inventory: [
+                { id: "inv1", name: "Nutrisi AB Mix Melon (Set Pekatan 5L)", qty: 4, unit: "Set", min: 2 },
+                { id: "inv2", name: "Benih Melon Intanon RZ (Pack 100 biji)", qty: 2, unit: "Pack", min: 2 },
+                { id: "inv3", name: "Rockwool Cultilene (Slab)", qty: 6, unit: "Slab", min: 3 },
+                { id: "inv4", name: "pH Down (Asam Fosfat 85%)", qty: 3, unit: "Liter", min: 1 },
+                { id: "inv5", name: "Tali Gantung & Hook Buah", qty: 450, unit: "Pcs", min: 400 },
+                { id: "inv6", name: "Kardus Kemasan Melon Premium (Isi 2)", qty: 60, unit: "Box", min: 150 }
+            ]
+        };
+        let currentUser = localStorage.getItem(ACTIVE_USER_KEY) || "Petani_Utama";
+        let appState = loadState(currentUser);
+        function getUserStorageKey(userId) {
+            const cleanId = (userId || "Petani_Utama").trim().replace(/[^a-zA-Z0-9_-]/g, "_") || "Petani_Utama";
+            return BASE_STORAGE_KEY + cleanId;
+        }
+        function loadState(userId = currentUser) {
+            try {
+                const raw = localStorage.getItem(getUserStorageKey(userId));
+                if (!raw) return JSON.parse(JSON.stringify(defaultState));
+                const parsed = JSON.parse(raw);
+                const merged = { ...JSON.parse(JSON.stringify(defaultState)), ...parsed };
+                if (Array.isArray(merged.sensorLogs)) {
+                    merged.sensorLogs = merged.sensorLogs.map(row => ({
+                        ...row,
+                        ec: typeof row.ec === "number" ? row.ec : +(row.ppm / 500).toFixed(2)
+                    }));
+                }
+                return merged;
+            } catch (e) {
+                console.error("Gagal memuat state:", e);
+                return JSON.parse(JSON.stringify(defaultState));
+            }
+        }
+        function saveState() {
+            try {
+                localStorage.setItem(ACTIVE_USER_KEY, currentUser);
+                localStorage.setItem(getUserStorageKey(currentUser), JSON.stringify(appState));
+            } catch (e) {
+                console.error("Gagal menyimpan state:", e);
+            }
+        }
+        function handleUserProfileChange() {
+            const inputEl = document.getElementById("userProfileInput");
+            const nextUser = (inputEl.value || "Petani_Utama").trim() || "Petani_Utama";
+            inputEl.value = nextUser;
+            currentUser = nextUser;
+            localStorage.setItem(ACTIVE_USER_KEY, currentUser);
+            appState = loadState(currentUser);
+            initApp();
+            showToast(`Database pengguna aktif beralih ke: ${currentUser}`);
+        }
+        // -------------------------------------------------------------------------
+        // 3. HELPER FUNCTIONS: VPD CALCULATION, EC CONVERSION, TOAST & NAVIGATION
+        // -------------------------------------------------------------------------
+        /**
+         * Menghitung Vapor Pressure Deficit (VPD) dalam kPa berdasarkan rumus Tetens:
+         * SVP = 0.61078 * exp((17.27 * T) / (T + 237.3))
+         * AVP = SVP * (RH / 100)
+         * VPD = SVP - AVP
+         */
+        function calculateVPD(tempC, rhPercent) {
+            const svp = 0.61078 * Math.exp((17.27 * tempC) / (tempC + 237.3));
+            const avp = svp * (rhPercent / 100);
+            return Math.max(0, +(svp - avp).toFixed(2));
+        }
+        function syncEcFromPpm() {
+            const ppmVal = parseFloat(document.getElementById("input-ppm").value) || 0;
+            document.getElementById("input-ec").value = (ppmVal / 500).toFixed(2);
+        }
+        function syncPpmFromEc() {
+            const ecVal = parseFloat(document.getElementById("input-ec").value) || 0;
+            document.getElementById("input-ppm").value = Math.round(ecVal * 500);
+        }
+        function livePreviewVpd() {
+            const t = parseFloat(document.getElementById("input-airTemp").value) || 0;
+            const rh = parseFloat(document.getElementById("input-rh").value) || 0;
+            const vpd = calculateVPD(t, rh);
+            const el = document.getElementById("live-vpd-preview");
+            if (el) el.textContent = `${vpd.toFixed(2)} kPa`;
+        }
+        function showToast(message, type = "success") {
+            const container = document.getElementById("toastContainer");
+            const toast = document.createElement("div");
+            const colors = type === "success"
+                ? "bg-emerald-900 text-white border-emerald-700"
+                : type === "warning"
+                ? "bg-amber-900 text-white border-amber-700"
+                : "bg-rose-900 text-white border-rose-700";
+            toast.className = `pointer-events-auto flex items-center gap-2.5 px-4 py-3 rounded-xl border shadow-lg text-xs font-medium transition-all transform translate-y-2 opacity-0 ${colors}`;
+            toast.innerHTML = `
+                <i data-lucide="${type === 'success' ? 'check-circle-2' : 'alert-triangle'}" class="w-4 h-4 shrink-0 text-melon-400"></i>
+                <span>${message}</span>
+            `;
+            container.appendChild(toast);
+            lucide.createIcons();
+            requestAnimationFrame(() => {
+                toast.classList.remove("translate-y-2", "opacity-0");
+            });
+            setTimeout(() => {
+                toast.classList.add("opacity-0", "translate-y-2");
+                setTimeout(() => toast.remove(), 300);
+            }, 3200);
+        }
+        function switchTab(tabId) {
+            document.querySelectorAll(".tab-section").forEach(sec => sec.classList.add("hidden"));
+            const target = document.getElementById(`tab-${tabId}`);
+            if (target) target.classList.remove("hidden");
+            document.querySelectorAll(".nav-btn").forEach(btn => {
+                btn.classList.remove("tab-active");
+                btn.classList.add("text-emerald-200", "hover:bg-emerald-900/90");
+            });
+            const activeBtn = document.getElementById(`nav-${tabId}`);
+            if (activeBtn) {
+                activeBtn.classList.add("tab-active");
+                activeBtn.classList.remove("text-emerald-200", "hover:bg-emerald-900/90");
+            }
+        }
+        // -------------------------------------------------------------------------
+        // 4. GLOBAL SYSTEM / CULTIVAR / PHASE SYNCHRONIZATION
+        // -------------------------------------------------------------------------
+        function handleGlobalConfigChange() {
+            appState.system = document.getElementById("globalSystemSelect").value;
+            appState.cultivar = document.getElementById("globalCultivarSelect").value;
+            appState.phase = parseInt(document.getElementById("globalPhaseSelect").value, 10);
+            appState.selectedSopPhase = appState.phase;
+            // Sinkronkan target PPM di kalkulator sesuai fase baru
+            const phaseObj = SOP_PHASES[appState.phase];
+            const recommendedPPM = Math.round((phaseObj.ppmMin + phaseObj.ppmMax) / 2);
+            document.getElementById("calc-targetPPM").value = recommendedPPM;
+            saveState();
+            updateGlobalBanner();
+            renderDashboard();
+            renderSOP();
+            calculateNutrients();
+            showToast(`Konfigurasi diperbarui (${currentUser}): ${appState.system} | ${appState.cultivar} | ${phaseObj.shortName}`);
+        }
+        function updateGlobalBanner() {
+            const sys = SYSTEM_PROFILES[appState.system] || SYSTEM_PROFILES.NFT;
+            const phaseObj = SOP_PHASES[appState.phase] || SOP_PHASES[2];
+            document.getElementById("bannerSystemTitle").textContent = `Mode Aktif: ${sys.name} — Varietas ${appState.cultivar}`;
+            document.getElementById("bannerTargetPPM").textContent = `Target Nutrisi (${phaseObj.shortName}): ${phaseObj.tds}`;
+            document.getElementById("bannerSystemNote").textContent = sys.note;
+            document.getElementById("systemMaintenanceIntervalBadge").textContent = sys.drainageInterval;
+        }
+        // -------------------------------------------------------------------------
+        // 5. TAB 1: DASHBOARD TELEMETRY, CEK EC METER, MANUAL RESET VPD & SVG CHART
+        // -------------------------------------------------------------------------
+        function renderDashboard() {
+            const userLabel = document.getElementById("activeUserLabelDashboard");
+            if (userLabel) userLabel.textContent = currentUser;
+            const latest = appState.sensorLogs[appState.sensorLogs.length - 1] || {
+                time: "Reset Manual (0.00)",
+                ppm: 0,
+                ec: 0.00,
+                ph: 6.0,
+                waterTemp: 25.0,
+                airTemp: 28.0,
+                rh: 70,
+                vpd: 0.00
+            };
+            const phaseObj = SOP_PHASES[appState.phase];
+            // Update KPI Values
+            document.getElementById("kpi-ppm").textContent = latest.ppm;
+            document.getElementById("target-ppm-text").textContent = `Target Fase: ${phaseObj.tds} | EC: ${latest.ec.toFixed(2)} mS/cm`;
+            document.getElementById("kpi-ph").textContent = latest.ph.toFixed(1);
+            document.getElementById("kpi-waterTemp").textContent = latest.waterTemp.toFixed(1);
+            document.getElementById("kpi-airTemp").textContent = `${latest.airTemp.toFixed(1)}°C`;
+            document.getElementById("kpi-rh").textContent = `${latest.rh}%`;
+            document.getElementById("kpi-vpd").textContent = latest.vpd.toFixed(2);
+            // Evaluate Status Badges
+            const ppmBadge = document.getElementById("badge-ppm");
+            if (latest.ppm === 0) {
+                ppmBadge.textContent = "Direset";
+                ppmBadge.className = "text-[11px] font-bold px-2 py-0.5 rounded-full bg-slate-200 text-slate-700";
+            } else if (latest.ppm < phaseObj.ppmMin) {
+                ppmBadge.textContent = "Kurang Pekat";
+                ppmBadge.className = "text-[11px] font-bold px-2 py-0.5 rounded-full bg-amber-100 text-amber-800";
+            } else if (latest.ppm > phaseObj.ppmMax + 150) {
+                ppmBadge.textContent = "Terlalu Tinggi";
+                ppmBadge.className = "text-[11px] font-bold px-2 py-0.5 rounded-full bg-rose-100 text-rose-800";
+            } else {
+                ppmBadge.textContent = "Optimal";
+                ppmBadge.className = "text-[11px] font-bold px-2 py-0.5 rounded-full bg-emerald-100 text-emerald-800";
+            }
+            const phBadge = document.getElementById("badge-ph");
+            if (latest.ph >= 5.7 && latest.ph <= 6.3) {
+                phBadge.textContent = "Optimal";
+                phBadge.className = "text-[11px] font-bold px-2 py-0.5 rounded-full bg-emerald-100 text-emerald-800";
+            } else {
+                phBadge.textContent = "Perlu Koreksi";
+                phBadge.className = "text-[11px] font-bold px-2 py-0.5 rounded-full bg-rose-100 text-rose-800";
+            }
+            const wTempBadge = document.getElementById("badge-waterTemp");
+            if (latest.waterTemp <= 27.5) {
+                wTempBadge.textContent = "Aman (DO Tinggi)";
+                wTempBadge.className = "text-[11px] font-bold px-2 py-0.5 rounded-full bg-emerald-100 text-emerald-800";
+            } else {
+                wTempBadge.textContent = "Waspada Panas";
+                wTempBadge.className = "text-[11px] font-bold px-2 py-0.5 rounded-full bg-rose-100 text-rose-800";
+            }
+            const vpdBadge = document.getElementById("badge-vpd");
+            const vpdAdvice = document.getElementById("vpd-advice");
+            const actionBox = document.getElementById("agronomyActionBox");
+            if (latest.vpd === 0 && latest.ppm === 0) {
+                vpdBadge.textContent = "0.00 kPa";
+                vpdAdvice.textContent = "Monitoring & VPD telah di-reset manual. Masukkan hasil ukur EC meter & iklim baru.";
+                actionBox.className = "p-3.5 rounded-xl bg-slate-100 border border-slate-200 text-xs text-slate-800 space-y-1";
+                actionBox.innerHTML = `
+                    <div class="font-bold flex items-center gap-1.5 text-slate-800">
+                        <i data-lucide="rotate-ccw" class="w-4 h-4 text-emerald-700"></i>
+                        <span>Status: Monitoring &amp; VPD (kPa) Telah Direset Manual</span>
+                    </div>
+                    <p class="leading-relaxed text-slate-600">Perubahan reset tersimpan di database pengguna <strong>${currentUser}</strong>. Silakan input pembacaan EC meter, TDS, pH, suhu, dan RH terbaru.</p>
+                `;
+            } else if (latest.vpd >= 0.8 && latest.vpd <= 1.5) {
+                vpdBadge.textContent = "Optimal";
+                vpdAdvice.textContent = "Transpirasi & serapan Kalsium optimal (0.8–1.5 kPa)";
+                actionBox.className = "p-3.5 rounded-xl bg-emerald-50 border border-emerald-200 text-xs text-emerald-900 space-y-1";
+                actionBox.innerHTML = `
+                    <div class="font-bold flex items-center gap-1.5 text-emerald-800">
+                        <i data-lucide="check-circle-2" class="w-4 h-4 text-emerald-600"></i>
+                        <span>Status Agronomi: Kondisi Sangat Ideal (EC ${latest.ec.toFixed(2)} mS/cm)</span>
+                    </div>
+                    <p class="leading-relaxed text-emerald-800/90">VPD ${latest.vpd} kPa mendukung pembukaan stomata optimal. ${latest.waterTemp > 27.5 ? 'Namun perhatikan suhu air tandon (' + latest.waterTemp + '°C), segera dinginkan atau tambah aerasi.' : 'Suhu zona perakaran aman dari risiko Pythium.'}</p>
+                `;
+            } else if (latest.vpd > 1.5) {
+                vpdBadge.textContent = "Terlalu Kering";
+                vpdAdvice.textContent = "Risiko stomata menutup & defisiensi Kalsium (BER)";
+                actionBox.className = "p-3.5 rounded-xl bg-amber-50 border border-amber-200 text-xs text-amber-900 space-y-1";
+                actionBox.innerHTML = `
+                    <div class="font-bold flex items-center gap-1.5 text-amber-800">
+                        <i data-lucide="alert-triangle" class="w-4 h-4 text-amber-600"></i>
+                        <span>Peringatan VPD Tinggi (${latest.vpd} kPa)</span>
+                    </div>
+                    <p class="leading-relaxed">Udara greenhouse terlalu panas/kering. Aktifkan cooling pad, fogger/misting, atau buka ventilasi atap untuk menurunkan suhu dan menaikkan RH agar serapan Kalsium ke buah tidak terhenti.</p>
+                `;
+            } else {
+                vpdBadge.textContent = "Terlalu Lembap";
+                vpdAdvice.textContent = "Risiko jamur Embun Tepung/Bulu meningkat";
+                actionBox.className = "p-3.5 rounded-xl bg-sky-50 border border-sky-200 text-xs text-sky-900 space-y-1";
+                actionBox.innerHTML = `
+                    <div class="font-bold flex items-center gap-1.5 text-sky-800">
+                        <i data-lucide="cloud-rain" class="w-4 h-4 text-sky-600"></i>
+                        <span>Peringatan VPD Rendah (${latest.vpd} kPa)</span>
+                    </div>
+                    <p class="leading-relaxed">Kelembapan udara terlalu jenuh. Nyalakan kipas sirkulasi internal (HAF fan) untuk mencegah spora jamur berkecambah di permukaan daun.</p>
+                `;
+            }
+            livePreviewVpd();
+            renderTelemetrySVG();
+            renderSensorTable();
+            lucide.createIcons();
+        }
+        function saveSensorReading(e) {
+            e.preventDefault();
+            const ppm = parseFloat(document.getElementById("input-ppm").value);
+            const ecInput = parseFloat(document.getElementById("input-ec").value);
+            const ec = !isNaN(ecInput) && ecInput > 0 ? +ecInput.toFixed(2) : +(ppm / 500).toFixed(2);
+            const ph = parseFloat(document.getElementById("input-ph").value);
+            const waterTemp = parseFloat(document.getElementById("input-waterTemp").value);
+            const airTemp = parseFloat(document.getElementById("input-airTemp").value);
+            const rh = parseFloat(document.getElementById("input-rh").value);
+            const timeSlot = document.getElementById("input-timeSlot").value;
+            const vpd = calculateVPD(airTemp, rh);
+            appState.sensorLogs.push({
+                time: timeSlot,
+                ppm,
+                ec,
+                ph,
+                waterTemp,
+                airTemp,
+                rh,
+                vpd
+            });
+            if (appState.sensorLogs.length > 8) {
+                appState.sensorLogs.shift();
+            }
+            saveState();
+            renderDashboard();
+            showToast(`Data (${timeSlot}) tersimpan ke database ${currentUser}. EC: ${ec.toFixed(2)} mS/cm | VPD: ${vpd} kPa`);
+        }
+        function resetVpdAndMonitoringManual() {
+            const nowLabel = new Date().toLocaleTimeString("id-ID", { hour: "2-digit", minute: "2-digit" });
+            appState.sensorLogs = [
+                {
+                    time: `Reset Manual (${nowLabel})`,
+                    ppm: 0,
+                    ec: 0.00,
+                    ph: 6.0,
+                    waterTemp: 25.0,
+                    airTemp: 25.0,
+                    rh: 100,
+                    vpd: 0.00
+                }
+            ];
+            document.getElementById("input-ppm").value = 0;
+            document.getElementById("input-ec").value = "0.00";
+            document.getElementById("input-ph").value = 6.0;
+            document.getElementById("input-waterTemp").value = 25.0;
+            document.getElementById("input-airTemp").value = 25.0;
+            document.getElementById("input-rh").value = 100;
+            saveState();
+            renderDashboard();
+            showToast(`Monitoring & VPD (kPa) berhasil di-reset manual dan disimpan untuk ${currentUser}.`);
+        }
+        function renderTelemetrySVG() {
+            const container = document.getElementById("telemetryChartContainer");
+            const data = appState.sensorLogs && appState.sensorLogs.length > 0
+                ? appState.sensorLogs
+                : [{ time: "Kosong", ppm: 0, ec: 0, ph: 6.0, waterTemp: 25, airTemp: 25, rh: 70, vpd: 0 }];
+            const width = 640;
+            const height = 210;
+            const padL = 45, padR = 25, padT = 20, padB = 32;
+            const plotW = width - padL - padR;
+            const plotH = height - padT - padB;
+            const maxVal = 2000;
+            const getX = (idx) => padL + (data.length === 1 ? plotW / 2 : (idx / (data.length - 1)) * plotW);
+            const getY = (val) => padT + plotH - (Math.min(maxVal, Math.max(0, val)) / maxVal) * plotH;
+            let ppmPoints = [];
+            let vpdPoints = [];
+            let circlesHTML = "";
+            let xLabelsHTML = "";
+            data.forEach((d, i) => {
+                const x = getX(i);
+                const yPPM = getY(d.ppm);
+                const yVPD = getY(d.vpd * 1000);
+                ppmPoints.push(`${x},${yPPM}`);
+                vpdPoints.push(`${x},${yVPD}`);
+                circlesHTML += `
+                    <circle cx="${x}" cy="${yPPM}" r="4.5" fill="#10b981" stroke="#ffffff" stroke-width="2"></circle>
+                    <text x="${x}" y="${yPPM - 9}" text-anchor="middle" font-size="10" font-weight="700" fill="#065f46">${d.ppm}</text>
+                    <circle cx="${x}" cy="${yVPD}" r="4" fill="#f59e0b" stroke="#ffffff" stroke-width="1.5"></circle>
+                    <text x="${x}" y="${yVPD + 14}" text-anchor="middle" font-size="9" font-weight="600" fill="#b45309">${d.vpd}</text>
+                `;
+                const shortLabel = d.time.replace("Hari Ini ", "").replace("Kemarin ", "Kmr ");
+                xLabelsHTML += `<text x="${x}" y="${height - 8}" text-anchor="middle" font-size="10" fill="#64748b">${shortLabel}</text>`;
+            });
+            let gridHTML = "";
+            [0, 500, 1000, 1500, 2000].forEach(val => {
+                const y = getY(val);
+                gridHTML += `
+                    <line x1="${padL}" y1="${y}" x2="${width - padR}" y2="${y}" stroke="#e2e8f0" stroke-dasharray="3,3" stroke-width="1"/>
+                    <text x="${padL - 8}" y="${y + 3}" text-anchor="end" font-size="10" fill="#94a3b8">${val}</text>
+                `;
+            });
+            container.innerHTML = `
+                <svg viewBox="0 0 ${width} ${height}" class="w-full h-full overflow-visible">
+                    <defs>
+                        <linearGradient id="ppmAreaGrad" x1="0" y1="0" x2="0" y2="1">
+                            <stop offset="0%" stop-color="#10b981" stop-opacity="0.22"/>
+                            <stop offset="100%" stop-color="#10b981" stop-opacity="0.0"/>
+                        </linearGradient>
+                    </defs>
+                    ${gridHTML}
+                    ${data.length > 1 ? `<polygon points="${padL},${padT + plotH} ${ppmPoints.join(" ")} ${getX(data.length - 1)},${padT + plotH}" fill="url(#ppmAreaGrad)" />` : ""}
+                    <polyline fill="none" stroke="#10b981" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" points="${ppmPoints.join(" ")}" />
+                    <polyline fill="none" stroke="#f59e0b" stroke-width="2" stroke-dasharray="4,3" stroke-linecap="round" stroke-linejoin="round" points="${vpdPoints.join(" ")}" />
+                    ${circlesHTML}
+                    ${xLabelsHTML}
+                </svg>
+            `;
+        }
+        function renderSensorTable() {
+            const tbody = document.getElementById("sensorLogTableBody");
+            const reversed = [...appState.sensorLogs].reverse().slice(0, 5);
+            tbody.innerHTML = reversed.map(row => {
+                const ecVal = typeof row.ec === "number" ? row.ec : +(row.ppm / 500).toFixed(2);
+                const isOptimal = row.ppm > 0 && row.ph >= 5.7 && row.ph <= 6.3 && row.vpd >= 0.8 && row.vpd <= 1.5;
+                return `
+                    <tr>
+                        <td class="py-2 font-medium">${row.time}</td>
+                        <td class="py-2 font-bold text-emerald-700">${row.ppm}</td>
+                        <td class="py-2 font-bold text-teal-800">${ecVal.toFixed(2)} mS/cm</td>
+                        <td class="py-2">${row.ph.toFixed(1)}</td>
+                        <td class="py-2">${row.waterTemp.toFixed(1)}°C</td>
+                        <td class="py-2">${row.airTemp.toFixed(1)}°C / ${row.rh}%</td>
+                        <td class="py-2 font-semibold text-amber-700">${row.vpd.toFixed(2)} kPa</td>
+                        <td class="py-2">
+                            <span class="px-2 py-0.5 rounded-full text-[10px] font-bold ${isOptimal ? 'bg-emerald-100 text-emerald-800' : 'bg-amber-100 text-amber-800'}">
+                                ${isOptimal ? 'Optimal' : (row.ppm === 0 ? 'Reset' : 'Koreksi')}
+                            </span>
+                        </td>
+                    </tr>
+                `;
+            }).join("");
+        }
+        // -------------------------------------------------------------------------
+        // 6. TAB 2: SOP INTERAKTIF, CHECKLIST & SOP TEKNIK DRIP SYSTEM
+        // -------------------------------------------------------------------------
+        function renderSOP() {
+            const activePhaseIdx = appState.selectedSopPhase;
+            const phaseObj = SOP_PHASES[activePhaseIdx];
+            const sysKey = appState.system;
+            const sysProfile = SYSTEM_PROFILES[sysKey] || SYSTEM_PROFILES.NFT;
+            document.getElementById("sopSystemLabel").textContent = sysProfile.name;
+            // Render Phase Pills
+            const pillsContainer = document.getElementById("sopPhasePills");
+            pillsContainer.innerHTML = SOP_PHASES.map(p => {
+                const isSelected = p.id === activePhaseIdx;
+                const checks = appState.checklistProgress[p.id] || [];
+                const doneCount = checks.filter(Boolean).length;
+                return `
+                    <button onclick="selectSopPhase(${p.id})" class="p-2.5 rounded-xl border text-left transition ${isSelected ? 'bg-emerald-600 text-white border-emerald-600 shadow-sm' : 'bg-slate-50 hover:bg-slate-100 text-slate-700 border-slate-200'}">
+                        <div class="flex items-center justify-between text-[11px] font-semibold ${isSelected ? 'text-emerald-100' : 'text-slate-400'}">
+                            <span>${p.days}</span>
+                            <span>${doneCount}/${p.tasks.length}</span>
+                        </div>
+                        <div class="font-display font-bold text-xs mt-0.5 truncate">${p.shortName}</div>
+                    </button>
+                `;
+            }).join("");
+            // Render Phase Details
+            document.getElementById("sopPhaseBadge").textContent = `Fase ${phaseObj.id + 1} dari 6`;
+            document.getElementById("sopPhaseDays").textContent = phaseObj.days;
+            document.getElementById("sopPhaseTitle").textContent = phaseObj.title;
+            document.getElementById("sopPhaseSummary").textContent = phaseObj.summary;
+            document.getElementById("sopTargetTDS").textContent = phaseObj.tds;
+            document.getElementById("sopTargetPH").textContent = phaseObj.ph;
+            document.getElementById("sopSystemSpecificHeader").textContent = `Protokol Khusus Sistem ${sysKey}`;
+            document.getElementById("sopSystemSpecificBody").textContent = phaseObj.systemTips[sysKey] || phaseObj.systemTips.NFT;
+            // Render Interactive Checklist
+            const checklistArr = appState.checklistProgress[activePhaseIdx] || new Array(phaseObj.tasks.length).fill(false);
+            const checklistContainer = document.getElementById("sopChecklistContainer");
+            checklistContainer.innerHTML = phaseObj.tasks.map((task, idx) => {
+                const checked = !!checklistArr[idx];
+                return `
+                    <label class="flex items-start gap-3 p-3 rounded-xl border cursor-pointer transition ${checked ? 'bg-emerald-50/70 border-emerald-200 text-slate-500' : 'bg-white border-slate-200 hover:border-emerald-300 text-slate-800'}">
+                        <input type="checkbox" ${checked ? 'checked' : ''} onchange="toggleSopTask(${activePhaseIdx}, ${idx})" class="mt-0.5 w-4 h-4 rounded text-emerald-600 focus:ring-emerald-500 cursor-pointer">
+                        <span class="text-xs sm:text-sm leading-relaxed ${checked ? 'line-through' : 'font-medium'}">${task}</span>
+                    </label>
+                `;
+            }).join("");
+            // Update Progress Bar
+            const completed = checklistArr.filter(Boolean).length;
+            const pct = Math.round((completed / phaseObj.tasks.length) * 100);
+            document.getElementById("sopProgressText").textContent = `${pct}% Selesai (${completed}/${phaseObj.tasks.length})`;
+            document.getElementById("sopProgressBar").style.width = `${pct}%`;
+            // Render SOP Teknik Drip System
+            renderDripSystemSOP();
+        }
+        function renderDripSystemSOP() {
+            const container = document.getElementById("dripSopGrid");
+            if (!container) return;
+            container.innerHTML = DRIP_SYSTEM_SOP.map(item => `
+                <div class="p-4 rounded-2xl bg-teal-50/50 border border-teal-200/80 space-y-1.5">
+                    <h4 class="font-display font-bold text-teal-950 text-xs sm:text-sm">${item.step}</h4>
+                    <p class="text-xs text-slate-700 leading-relaxed">${item.detail}</p>
+                </div>
+            `).join("");
+        }
+        function selectSopPhase(phaseId) {
+            appState.selectedSopPhase = phaseId;
+            saveState();
+            renderSOP();
+        }
+        function toggleSopTask(phaseId, taskIdx) {
+            if (!appState.checklistProgress[phaseId]) {
+                appState.checklistProgress[phaseId] = [];
+            }
+            appState.checklistProgress[phaseId][taskIdx] = !appState.checklistProgress[phaseId][taskIdx];
+            saveState();
+            renderSOP();
+        }
+        function resetCurrentPhaseChecklist() {
+            const phaseId = appState.selectedSopPhase;
+            appState.checklistProgress[phaseId] = new Array(SOP_PHASES[phaseId].tasks.length).fill(false);
+            saveState();
+            renderSOP();
+            showToast("Checklist fase ini telah di-reset.");
+        }
+        // -------------------------------------------------------------------------
+        // 7. TAB 3: KALKULATOR NUTRISI AB MIX & pH ADJUSTMENT
+        // -------------------------------------------------------------------------
+        function calculateNutrients() {
+            const volume = Math.max(1, parseFloat(document.getElementById("calc-volume").value) || 0);
+            const currentPPM = Math.max(0, parseFloat(document.getElementById("calc-currentPPM").value) || 0);
+            const targetPPM = Math.max(0, parseFloat(document.getElementById("calc-targetPPM").value) || 0);
+            const ppmPerMlPerLiter = parseFloat(document.getElementById("calc-stockRatio").value) || 200;
+            const deltaPPM = Math.max(0, targetPPM - currentPPM);
+            const mlNeeded = Math.round((deltaPPM / ppmPerMlPerLiter) * volume);
+            document.getElementById("calc-deltaPPMBadge").textContent = `Kenaikan: +${deltaPPM} PPM`;
+            document.getElementById("res-stockA").textContent = mlNeeded.toLocaleString("id-ID");
+            document.getElementById("res-stockA-liter").textContent = `(${(mlNeeded / 1000).toFixed(2)} Liter Pekatan A)`;
+            document.getElementById("res-stockB").textContent = mlNeeded.toLocaleString("id-ID");
+            document.getElementById("res-stockB-liter").textContent = `(${(mlNeeded / 1000).toFixed(2)} Liter Pekatan B)`;
+            const currentPH = parseFloat(document.getElementById("calc-currentPH").value) || 6.0;
+            const targetPH = parseFloat(document.getElementById("calc-targetPH").value) || 6.0;
+            const diffPH = +(currentPH - targetPH).toFixed(2);
+            const phLabel = document.getElementById("res-phLabel");
+            const phDose = document.getElementById("res-phDose");
+            if (Math.abs(diffPH) < 0.1) {
+                phLabel.textContent = "pH Sudah Sesuai Target";
+                phDose.textContent = "0";
+            } else if (diffPH > 0) {
+                phLabel.textContent = "Estimasi pH Down (Asam Nitrat/Fosfat)";
+                const estMl = Math.max(1, Math.round(diffPH * volume * 0.1));
+                phDose.textContent = `~${estMl}`;
+            } else {
+                phLabel.textContent = "Estimasi pH Up (Kalium Hidroksida/KOH)";
+                const estMl = Math.max(1, Math.round(Math.abs(diffPH) * volume * 0.08));
+                phDose.textContent = `~${estMl}`;
+            }
+        }
+        // -------------------------------------------------------------------------
+        // 8. TAB 4: LOGBOOK & ESTIMASI PANEN
+        // -------------------------------------------------------------------------
+        function addDays(dateStr, days) {
+            const d = new Date(dateStr);
+            if (isNaN(d.getTime())) return "-";
+            d.setDate(d.getDate() + days);
+            return d.toLocaleDateString("id-ID", { day: "numeric", month: "short", year: "numeric" });
+        }
+        function updateHarvestTimeline() {
+            const tDate = document.getElementById("batch-transplantDate").value;
+            const pDate = document.getElementById("batch-pollinationDate").value;
+            appState.batch.name = document.getElementById("batch-name").value;
+            appState.batch.transplantDate = tDate;
+            appState.batch.pollinationDate = pDate;
+            saveState();
+            const box = document.getElementById("harvestTimelineBox");
+            if (!tDate) {
+                box.innerHTML = `<p class="text-slate-500">Pilih tanggal pindah tanam untuk menghitung jadwal agronomi.</p>`;
+                return;
+            }
+            const estPollinationStart = addDays(tDate, 23);
+            const estPollinationEnd = addDays(tDate, 27);
+            const estNetting = addDays(tDate, 35);
+            const estHarvest = pDate
+                ? `${addDays(pDate, 36)} s/d ${addDays(pDate, 40)} (H+36 s/d H+40 Polinasi)`
+                : `${addDays(tDate, 60)} s/d ${addDays(tDate, 65)} (60–65 HST)`;
+            const hstNow = Math.floor((Date.now() - new Date(tDate).getTime()) / 86400000);
+            box.innerHTML = `
+                <div class="flex items-center justify-between border-b border-emerald-200 pb-2">
+                    <span class="font-bold text-emerald-900">Umur Tanaman Saat Ini:</span>
+                    <span class="px-2.5 py-0.5 rounded-full bg-emerald-700 text-white font-bold">${hstNow >= 0 ? hstNow + ' HST' : 'Belum Tanam'}</span>
+                </div>
+                <div class="flex justify-between">
+                    <span class="text-slate-600">Jendela Polinasi Ideal (Ruas 8–11):</span>
+                    <span class="font-semibold text-slate-900">${estPollinationStart} – ${estPollinationEnd}</span>
+                </div>
+                <div class="flex justify-between">
+                    <span class="text-slate-600">Fase Pembentukan Net &amp; Gantung Buah:</span>
+                    <span class="font-semibold text-slate-900">${estNetting}</span>
+                </div>
+                <div class="flex justify-between pt-1 border-t border-emerald-200">
+                    <span class="font-bold text-amber-800">Estimasi Waktu Panen Raya:</span>
+                    <span class="font-extrabold text-amber-800">${estHarvest}</span>
+                </div>
+            `;
+        }
+        function addMaintenanceLog(e) {
+            e.preventDefault();
+            const date = document.getElementById("log-date").value;
+            const category = document.getElementById("log-category").value;
+            const note = document.getElementById("log-note").value.trim();
+            if (!note) return;
+            appState.maintenanceLogs.unshift({ date, category, note });
+            document.getElementById("log-note").value = "";
+            saveState();
+            renderMaintenanceLogs();
+            showToast("Catatan pemeliharaan berhasil ditambahkan ke logbook.");
+        }
+        function renderMaintenanceLogs() {
+            const list = document.getElementById("maintenanceLogList");
+            list.innerHTML = appState.maintenanceLogs.map((item, idx) => `
+                <div class="p-3.5 rounded-xl bg-slate-50 border border-slate-200/80 flex items-start justify-between gap-3">
+                    <div class="space-y-1">
+                        <div class="flex items-center gap-2">
+                            <span class="text-[11px] font-bold px-2 py-0.5 rounded-md bg-emerald-100 text-emerald-800">${item.category}</span>
+                            <span class="text-xs text-slate-400 font-medium">${item.date}</span>
+                        </div>
+                        <p class="text-xs sm:text-sm text-slate-700 leading-relaxed">${item.note}</p>
+                    </div>
+                    <button onclick="deleteMaintenanceLog(${idx})" class="text-slate-400 hover:text-rose-600 p-1" title="Hapus Log">
+                        <i data-lucide="trash-2" class="w-4 h-4"></i>
+                    </button>
+                </div>
+            `).join("");
+            lucide.createIcons();
+        }
+        function deleteMaintenanceLog(idx) {
+            appState.maintenanceLogs.splice(idx, 1);
+            saveState();
+            renderMaintenanceLogs();
+            showToast("Log aktivitas dihapus.", "warning");
+        }
+        // -------------------------------------------------------------------------
+        // 9. TAB 5: DIAGNOSTIK HAMA & PENYAKIT
+        // -------------------------------------------------------------------------
+        let currentDiagFilter = "ALL";
+        function renderDiagnostics(filterCat = currentDiagFilter) {
+            currentDiagFilter = filterCat;
+            const grid = document.getElementById("diagnosticsGrid");
+            const filtered = filterCat === "ALL"
+                ? DIAGNOSTICS_DATA
+                : DIAGNOSTICS_DATA.filter(d => d.category === filterCat);
+            grid.innerHTML = filtered.map(item => `
+                <div class="rounded-2xl border border-slate-200 bg-slate-50/50 p-5 flex flex-col justify-between space-y-3 hover:shadow-md transition">
+                    <div class="space-y-2.5">
+                        <div class="flex items-center justify-between">
+                            <span class="text-[11px] font-bold px-2.5 py-0.5 rounded-full ${item.badgeColor}">${item.category}</span>
+                            <span class="text-[11px] italic text-slate-400 truncate max-w-[170px]">${item.pathogen}</span>
+                        </div>
+                        <h3 class="font-display font-bold text-slate-900 text-base">${item.title}</h3>
+                        <div class="text-xs space-y-2 text-slate-600 leading-relaxed">
+                            <p><strong class="text-slate-800">Gejala Visual:</strong> ${item.symptoms}</p>
+                            <p><strong class="text-slate-800">Pemicu Utama:</strong> ${item.trigger}</p>
+                        </div>
+                    </div>
+                    <div class="pt-3 border-t border-slate-200/80 text-xs text-emerald-950 bg-emerald-50/80 p-3 rounded-xl">
+                        <strong class="text-emerald-800 block mb-1">Tindakan Pengendalian:</strong>
+                        <p class="leading-relaxed">${item.solution}</p>
+                    </div>
+                </div>
+            `).join("");
+        }
+        function filterDiagnostics(category, ev) {
+            document.querySelectorAll(".diag-filter-btn").forEach(btn => {
+                btn.className = "diag-filter-btn px-3 py-1.5 rounded-xl text-xs font-semibold bg-slate-100 text-slate-700 hover:bg-slate-200";
+            });
+            if (ev && ev.target) {
+                ev.target.className = "diag-filter-btn px-3 py-1.5 rounded-xl text-xs font-semibold bg-emerald-600 text-white";
+            }
+            renderDiagnostics(category);
+        }
+        // -------------------------------------------------------------------------
+        // 10. TAB 6: INVENTARIS & ANALISIS FINANSIAL USAHA TANI
+        // -------------------------------------------------------------------------
+        function calculateFinance() {
+            const pop = Math.max(1, parseFloat(document.getElementById("fin-population").value) || 0);
+            const avgWeight = Math.max(0.1, parseFloat(document.getElementById("fin-avgWeight").value) || 0);
+            const opCost = Math.max(0, parseFloat(document.getElementById("fin-opCost").value) || 0);
+            const pctA = Math.max(0, parseFloat(document.getElementById("fin-pctA").value) || 0);
+            const pctB = Math.max(0, parseFloat(document.getElementById("fin-pctB").value) || 0);
+            const pctC = Math.max(0, parseFloat(document.getElementById("fin-pctC").value) || 0);
+            const priceA = Math.max(0, parseFloat(document.getElementById("fin-priceA").value) || 0);
+            const priceB = Math.max(0, parseFloat(document.getElementById("fin-priceB").value) || 0);
+            const priceC = Math.max(0, parseFloat(document.getElementById("fin-priceC").value) || 0);
+            const effectiveTrees = pop * 0.95;
+            const totalYieldKg = effectiveTrees * avgWeight;
+            const revA = totalYieldKg * (pctA / 100) * priceA;
+            const revB = totalYieldKg * (pctB / 100) * priceB;
+            const revC = totalYieldKg * (pctC / 100) * priceC;
+            const grossRevenue = revA + revB + revC;
+            const netProfit = grossRevenue - opCost;
+            const rcRatio = opCost > 0 ? (grossRevenue / opCost).toFixed(2) : "0.00";
+            const fmtRp = (num) => "Rp " + Math.round(num).toLocaleString("id-ID");
+            document.getElementById("fin-totalCost").textContent = fmtRp(opCost);
+            document.getElementById("fin-totalYield").textContent = `${Math.round(totalYieldKg).toLocaleString("id-ID")} kg`;
+            document.getElementById("fin-yieldBreakdown").textContent = `Grade A: ${pctA}% | Grade B: ${pctB}% | C: ${pctC}% (Survival 95%)`;
+            document.getElementById("fin-grossRevenue").textContent = fmtRp(grossRevenue);
+            document.getElementById("fin-netProfit").textContent = fmtRp(netProfit);
+            document.getElementById("fin-roi").textContent = `R/C Ratio: ${rcRatio} (${netProfit > 0 ? 'Menguntungkan' : 'Rugi'})`;
+        }
+        function renderInventory() {
+            const tbody = document.getElementById("inventoryTableBody");
+            tbody.innerHTML = appState.inventory.map((item, idx) => {
+                const isLow = item.qty < item.min;
+                return `
+                    <tr>
+                        <td class="py-2.5 px-3 font-medium text-slate-800">${item.name}</td>
+                        <td class="py-2.5 px-3 font-bold">${item.qty} <span class="font-normal text-slate-500">${item.unit}</span></td>
+                        <td class="py-2.5 px-3">
+                            <span class="px-2 py-0.5 rounded-full text-[10px] font-bold ${isLow ? 'bg-rose-100 text-rose-800' : 'bg-emerald-100 text-emerald-800'}">
+                                ${isLow ? 'Stok Menipis' : 'Aman'}
+                            </span>
+                        </td>
+                        <td class="py-2.5 px-3 text-right space-x-1">
+                            <button onclick="adjustStock(${idx}, -1)" class="px-2 py-1 rounded bg-slate-100 hover:bg-slate-200 font-bold text-slate-700">-</button>
+                            <button onclick="adjustStock(${idx}, 1)" class="px-2 py-1 rounded bg-emerald-100 hover:bg-emerald-200 font-bold text-emerald-800">+</button>
+                        </td>
+                    </tr>
+                `;
+            }).join("");
+        }
+        function adjustStock(idx, delta) {
+            appState.inventory[idx].qty = Math.max(0, appState.inventory[idx].qty + delta);
+            saveState();
+            renderInventory();
+        }
+        // -------------------------------------------------------------------------
+        // 11. TAB 7: REFERENSI ILMIAH & RESET MODAL
+        // -------------------------------------------------------------------------
+        function renderReferences() {
+            const grid = document.getElementById("referencesGrid");
+            grid.innerHTML = SCIENTIFIC_REFERENCES.map(ref => `
+                <div class="p-5 rounded-2xl bg-slate-50 border border-slate-200/90 flex flex-col justify-between space-y-3 hover:border-emerald-300 transition">
+                    <div class="space-y-2">
+                        <div class="flex items-center justify-between gap-2">
+                            <span class="text-[11px] font-bold px-2.5 py-0.5 rounded-md bg-emerald-100 text-emerald-900">${ref.type}</span>
+                            <span class="text-xs font-semibold text-slate-400 shrink-0">Tahun ${ref.year}</span>
+                        </div>
+                        <h3 class="font-display font-bold text-slate-900 text-sm leading-snug">${ref.title}</h3>
+                        <p class="text-xs font-semibold text-emerald-700">${ref.authors}</p>
+                        <p class="text-xs text-slate-600 leading-relaxed pt-1 border-t border-slate-200/70">${ref.relevance}</p>
+                    </div>
+                    ${ref.url ? `
+                    <div class="pt-2">
+                        <a href="${ref.url}" target="_blank" rel="noopener noreferrer" class="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-xl bg-emerald-600 hover:bg-emerald-700 text-white text-xs font-semibold transition shadow-sm">
+                            <i data-lucide="external-link" class="w-3.5 h-3.5"></i>
+                            <span>Buka &amp; Akses Sumber Pustaka</span>
+                        </a>
+                    </div>
+                    ` : ""}
+                </div>
+            `).join("");
+            lucide.createIcons();
+        }
+        function openResetModal() {
+            document.getElementById("resetModal").classList.remove("hidden");
+        }
+        function closeResetModal() {
+            document.getElementById("resetModal").classList.add("hidden");
+        }
+        function confirmResetData() {
+            localStorage.removeItem(getUserStorageKey(currentUser));
+            appState = JSON.parse(JSON.stringify(defaultState));
+            saveState();
+            closeResetModal();
+            initApp();
+            showToast(`Seluruh data untuk pengguna ${currentUser} dikembalikan ke pengaturan awal.`);
+        }
+        // -------------------------------------------------------------------------
+        // 12. FITUR DOWNLOAD PDF PER KEGIATAN & REKAP SELURUH KEGIATAN (jsPDF)
+        // -------------------------------------------------------------------------
+        function createPdfDoc(reportTitle, subtitleText) {
+            const { jsPDF } = window.jspdf;
+            const doc = new jsPDF({ orientation: "portrait", unit: "mm", format: "a4" });
+            const pageWidth = doc.internal.pageSize.getWidth();
+            // Header Banner
+            doc.setFillColor(2, 44, 34); // emerald-950
+            doc.rect(0, 0, pageWidth, 28, "F");
+            doc.setFillColor(245, 158, 11); // melon-500 accent bar
+            doc.rect(0, 28, pageWidth, 1.5, "F");
+            doc.setTextColor(255, 255, 255);
+            doc.setFont("helvetica", "bold");
+            doc.setFontSize(14);
+            doc.text("GREENHOUSE BEJO GH — LAPORAN AGRONOMI MELON", 14, 12);
+            doc.setFont("helvetica", "normal");
+            doc.setFontSize(9.5);
+            doc.setTextColor(167, 243, 208);
+            doc.text(reportTitle, 14, 19);
+            doc.setFontSize(8);
+            doc.setTextColor(251, 191, 36);
+            doc.text(`${subtitleText} | Pengguna: ${currentUser} | Sistem: ${appState.system} | Varietas: ${appState.cultivar}`, 14, 24.5);
+            return { doc, startY: 36 };
+        }
+        function finishPdfDoc(doc, fileName) {
+            const pageCount = doc.internal.getNumberOfPages();
+            const pageWidth = doc.internal.pageSize.getWidth();
+            const pageHeight = doc.internal.pageSize.getHeight();
+            const nowStr = new Date().toLocaleString("id-ID");
+            for (let i = 1; i <= pageCount; i++) {
+                doc.setPage(i);
+                doc.setDrawColor(203, 213, 225);
+                doc.line(14, pageHeight - 12, pageWidth - 14, pageHeight - 12);
+                doc.setFont("helvetica", "normal");
+                doc.setFontSize(7.5);
+                doc.setTextColor(100, 116, 139);
+                doc.text(`Dicetak pada: ${nowStr} | Database Pengguna: ${currentUser}`, 14, pageHeight - 7.5);
+                doc.text(`Halaman ${i} dari ${pageCount}`, pageWidth - 14, pageHeight - 7.5, { align: "right" });
+            }
+            doc.save(fileName);
+            showToast(`PDF berhasil diunduh: ${fileName}`);
+        }
+        function addSectionHeaderPDF(doc, title, y) {
+            if (y > 265) {
+                doc.addPage();
+                y = 18;
+            }
+            doc.setFillColor(236, 253, 245);
+            doc.rect(14, y - 4.5, doc.internal.pageSize.getWidth() - 28, 7, "F");
+            doc.setFont("helvetica", "bold");
+            doc.setFontSize(10.5);
+            doc.setTextColor(6, 95, 70);
+            doc.text(title, 16, y);
+            return y + 5;
+        }
+        function appendMonitoringSectionPDF(doc, y) {
+            y = addSectionHeaderPDF(doc, "1. MONITORING PARAMETER NUTRISI (PPM / EC METER), pH & VPD (kPa)", y);
+            const rows = appState.sensorLogs.map(r => {
+                const ecVal = typeof r.ec === "number" ? r.ec.toFixed(2) : (r.ppm / 500).toFixed(2);
+                return [
+                    r.time,
+                    `${r.ppm} PPM`,
+                    `${ecVal} mS/cm`,
+                    `${Number(r.ph).toFixed(1)}`,
+                    `${Number(r.waterTemp).toFixed(1)} C`,
+                    `${Number(r.airTemp).toFixed(1)} C / ${r.rh}%`,
+                    `${Number(r.vpd).toFixed(2)} kPa`
+                ];
+            });
+            doc.autoTable({
+                startY: y,
+                head: [["Waktu", "TDS/PPM", "EC Meter", "pH", "Suhu Air", "Suhu/RH GH", "VPD"]],
+                body: rows.length ? rows : [["-", "-", "-", "-", "-", "-", "-"]],
+                theme: "grid",
+                styles: { fontSize: 8, cellPadding: 2 },
+                headStyles: { fillColor: [5, 150, 105], textColor: 255 },
+                margin: { left: 14, right: 14 }
+            });
+            return doc.lastAutoTable.finalY + 8;
+        }
+        function appendSopSectionPDF(doc, y) {
+            const phaseObj = SOP_PHASES[appState.selectedSopPhase] || SOP_PHASES[2];
+            y = addSectionHeaderPDF(doc, `2. SOP & CHECKLIST FASE — ${phaseObj.title} (${phaseObj.days})`, y);
+            const checks = appState.checklistProgress[phaseObj.id] || [];
+            const rows = phaseObj.tasks.map((t, idx) => [
+                `#${idx + 1}`,
+                checks[idx] ? "Selesai" : "Belum",
+                t
+            ]);
+            doc.autoTable({
+                startY: y,
+                head: [["No", "Status", "Langkah Operasional SOP"]],
+                body: rows,
+                theme: "striped",
+                styles: { fontSize: 8, cellPadding: 2 },
+                headStyles: { fillColor: [6, 95, 70], textColor: 255 },
+                columnStyles: { 0: { cellWidth: 12 }, 1: { cellWidth: 20 } },
+                margin: { left: 14, right: 14 }
+            });
+            return doc.lastAutoTable.finalY + 8;
+        }
+        function appendDripSopSectionPDF(doc, y) {
+            y = addSectionHeaderPDF(doc, "3. SOP TEKNIK DRIP SYSTEM (IRIGASI TETES MELON)", y);
+            const rows = DRIP_SYSTEM_SOP.map(item => [item.step, item.detail]);
+            doc.autoTable({
+                startY: y,
+                head: [["Tahapan Drip System", "Prosedur & Standar Teknis"]],
+                body: rows,
+                theme: "grid",
+                styles: { fontSize: 8, cellPadding: 2.2 },
+                headStyles: { fillColor: [15, 118, 110], textColor: 255 },
+                columnStyles: { 0: { cellWidth: 55, fontStyle: "bold" } },
+                margin: { left: 14, right: 14 }
+            });
+            return doc.lastAutoTable.finalY + 8;
+        }
+        function appendCalculatorSectionPDF(doc, y) {
+            y = addSectionHeaderPDF(doc, "4. PERHITUNGAN PERACIKAN NUTRISI AB MIX & KOREKSI pH", y);
+            const vol = document.getElementById("calc-volume").value;
+            const curPPM = document.getElementById("calc-currentPPM").value;
+            const tgtPPM = document.getElementById("calc-targetPPM").value;
+            const resA = document.getElementById("res-stockA").textContent;
+            const resB = document.getElementById("res-stockB").textContent;
+            const phDose = document.getElementById("res-phDose").textContent;
+            const phLabel = document.getElementById("res-phLabel").textContent;
+            doc.autoTable({
+                startY: y,
+                head: [["Parameter", "Nilai / Hasil Perhitungan"]],
+                body: [
+                    ["Volume Tandon", `${vol} Liter`],
+                    ["PPM Awal -> Target PPM", `${curPPM} PPM -> ${tgtPPM} PPM`],
+                    ["Kebutuhan Pekatan Stok A", `${resA} ml`],
+                    ["Kebutuhan Pekatan Stok B", `${resB} ml`],
+                    [phLabel, `${phDose} ml`]
+                ],
+                theme: "grid",
+                styles: { fontSize: 8.5, cellPadding: 2 },
+                headStyles: { fillColor: [5, 150, 105], textColor: 255 },
+                margin: { left: 14, right: 14 }
+            });
+            return doc.lastAutoTable.finalY + 8;
+        }
+        function appendLogbookSectionPDF(doc, y) {
+            y = addSectionHeaderPDF(doc, "5. LOGBOOK PEMELIHARAAN & ESTIMASI PANEN", y);
+            const rows = appState.maintenanceLogs.map(m => [m.date, m.category, m.note]);
+            doc.autoTable({
+                startY: y,
+                head: [["Tanggal", "Kategori", "Detail Tindakan"]],
+                body: rows.length ? rows : [["-", "-", "Belum ada catatan logbook"]],
+                theme: "striped",
+                styles: { fontSize: 8, cellPadding: 2 },
+                headStyles: { fillColor: [6, 95, 70], textColor: 255 },
+                columnStyles: { 0: { cellWidth: 26 }, 1: { cellWidth: 38 } },
+                margin: { left: 14, right: 14 }
+            });
+            return doc.lastAutoTable.finalY + 8;
+        }
+        function appendDiagnosticsSectionPDF(doc, y) {
+            y = addSectionHeaderPDF(doc, "6. DIAGNOSTIK HAMA, PENYAKIT & GANGGUAN FISIOLOGIS", y);
+            const rows = DIAGNOSTICS_DATA.map(d => [d.title, d.category, d.symptoms, d.solution]);
+            doc.autoTable({
+                startY: y,
+                head: [["Kasus", "Jenis", "Gejala", "Pengendalian"]],
+                body: rows,
+                theme: "grid",
+                styles: { fontSize: 7.5, cellPadding: 2 },
+                headStyles: { fillColor: [5, 150, 105], textColor: 255 },
+                columnStyles: { 0: { cellWidth: 36, fontStyle: "bold" }, 1: { cellWidth: 22 } },
+                margin: { left: 14, right: 14 }
+            });
+            return doc.lastAutoTable.finalY + 8;
+        }
+        function appendFinanceSectionPDF(doc, y) {
+            y = addSectionHeaderPDF(doc, "7. INVENTARIS SAPROTAN & ANALISIS USAHA TANI", y);
+            const totalCost = document.getElementById("fin-totalCost").textContent;
+            const totalYield = document.getElementById("fin-totalYield").textContent;
+            const grossRev = document.getElementById("fin-grossRevenue").textContent;
+            const netProfit = document.getElementById("fin-netProfit").textContent;
+            doc.autoTable({
+                startY: y,
+                head: [["Ringkasan Finansial", "Nilai"]],
+                body: [
+                    ["Total Biaya Operasional", totalCost],
+                    ["Proyeksi Hasil Panen", totalYield],
+                    ["Proyeksi Pendapatan Kotor", grossRev],
+                    ["Estimasi Laba Bersih / Siklus", netProfit]
+                ],
+                theme: "grid",
+                styles: { fontSize: 8, cellPadding: 2 },
+                headStyles: { fillColor: [6, 95, 70], textColor: 255 },
+                margin: { left: 14, right: 14 }
+            });
+            y = doc.lastAutoTable.finalY + 4;
+            const invRows = appState.inventory.map(i => [i.name, `${i.qty} ${i.unit}`, i.qty < i.min ? "Stok Menipis" : "Aman"]);
+            doc.autoTable({
+                startY: y,
+                head: [["Item Saprotan", "Stok", "Status"]],
+                body: invRows,
+                theme: "striped",
+                styles: { fontSize: 8, cellPadding: 2 },
+                headStyles: { fillColor: [5, 150, 105], textColor: 255 },
+                margin: { left: 14, right: 14 }
+            });
+            return doc.lastAutoTable.finalY + 8;
+        }
+        function downloadActivityPDF(activityKey) {
+            if (!window.jspdf || !window.jspdf.jsPDF) {
+                showToast("Pustaka PDF sedang dimuat, coba beberapa detik lagi.", "warning");
+                return;
+            }
+            const safeUser = currentUser.replace(/[^a-zA-Z0-9_-]/g, "_");
+            if (activityKey === "about") {
+                const { doc, startY } = createPdfDoc("PROFIL GREENHOUSE & RINGKASAN SISTEM", "Beranda & Tentang Kami");
+                let y = addSectionHeaderPDF(doc, "PROFIL GREENHOUSE BEJO GH", startY);
+                doc.autoTable({
+                    startY: y,
+                    head: [["Aspek", "Keterangan"]],
+                    body: [
+                        ["Kapasitas Populasi", "1.200+ Pohon (3 Blok Instalasi Terpisah)"],
+                        ["Standar Mutu Panen", "14 - 16 Brix (1 Pohon = 1 Buah Seleksi)"],
+                        ["Proteksi Greenhouse", "Insect Net 50 Mesh & UV Plastic 200 Micron"],
+                        ["Siklus Panen", "60 - 65 HST (Panen Terjadwal Kontinu)"],
+                        ["Sistem Hidroponik", "NFT, DFT, Rakit Apung & Drip System (Irigasi Tetes)"]
+                    ],
+                    theme: "grid",
+                    styles: { fontSize: 8.5, cellPadding: 2.5 },
+                    headStyles: { fillColor: [5, 150, 105], textColor: 255 },
+                    margin: { left: 14, right: 14 }
+                });
+                finishPdfDoc(doc, `Profil_GreenHouse_Bejo_${safeUser}.pdf`);
+            } else if (activityKey === "banner") {
+                const sys = SYSTEM_PROFILES[appState.system] || SYSTEM_PROFILES.NFT;
+                const phaseObj = SOP_PHASES[appState.phase] || SOP_PHASES[2];
+                const { doc, startY } = createPdfDoc("RINGKASAN KONFIGURASI SISTEM & FASE AKTIF", sys.name);
+                let y = addSectionHeaderPDF(doc, "STATUS OPERASIONAL AKTIF", startY);
+                doc.autoTable({
+                    startY: y,
+                    head: [["Parameter Aktif", "Detail"]],
+                    body: [
+                        ["Sistem Hidroponik", sys.name],
+                        ["Catatan Teknis Sistem", sys.note],
+                        ["Varietas Melon", appState.cultivar],
+                        ["Fase Pertumbuhan", `${phaseObj.title} (${phaseObj.days})`],
+                        ["Target Nutrisi & pH", `${phaseObj.tds} | pH ${phaseObj.ph}`]
+                    ],
+                    theme: "grid",
+                    styles: { fontSize: 8.5, cellPadding: 2.5 },
+                    headStyles: { fillColor: [5, 150, 105], textColor: 255 },
+                    margin: { left: 14, right: 14 }
+                });
+                finishPdfDoc(doc, `Ringkasan_Sistem_${appState.system}_${safeUser}.pdf`);
+            } else if (activityKey === "monitoring") {
+                const { doc, startY } = createPdfDoc("LAPORAN MONITORING NUTRISI (EC/PPM), pH & VPD", "Kegiatan Monitoring & VPD");
+                appendMonitoringSectionPDF(doc, startY);
+                finishPdfDoc(doc, `Monitoring_VPD_EC_${safeUser}.pdf`);
+            } else if (activityKey === "sop") {
+                const { doc, startY } = createPdfDoc("STANDAR OPERASIONAL PROSEDUR (SOP) & CHECKLIST FASE", "Kegiatan SOP & Checklist");
+                let y = appendSopSectionPDF(doc, startY);
+                appendDripSopSectionPDF(doc, y);
+                finishPdfDoc(doc, `SOP_Fase_Melon_${safeUser}.pdf`);
+            } else if (activityKey === "drip_sop") {
+                const { doc, startY } = createPdfDoc("SOP TEKNIK DRIP SYSTEM (IRIGASI TETES MELON)", "Panduan Irigasi Tetes Presisi");
+                appendDripSopSectionPDF(doc, startY);
+                finishPdfDoc(doc, `SOP_Drip_System_Melon_${safeUser}.pdf`);
+            } else if (activityKey === "calculator") {
+                const { doc, startY } = createPdfDoc("PERHITUNGAN PERACIKAN NUTRISI AB MIX & pH", "Kegiatan Kalkulator Nutrisi");
+                appendCalculatorSectionPDF(doc, startY);
+                finishPdfDoc(doc, `Kalkulator_ABMix_pH_${safeUser}.pdf`);
+            } else if (activityKey === "logbook") {
+                const { doc, startY } = createPdfDoc("LOGBOOK PEMELIHARAAN & ESTIMASI PANEN", "Kegiatan Logbook Kebun");
+                appendLogbookSectionPDF(doc, startY);
+                finishPdfDoc(doc, `Logbook_Panen_Melon_${safeUser}.pdf`);
+            } else if (activityKey === "diagnostics") {
+                const { doc, startY } = createPdfDoc("DIAGNOSTIK HAMA, PENYAKIT & GANGGUAN FISIOLOGIS", "Kegiatan Diagnostik Tanaman");
+                appendDiagnosticsSectionPDF(doc, startY);
+                finishPdfDoc(doc, `Diagnostik_Hama_Penyakit_${safeUser}.pdf`);
+            } else if (activityKey === "finance") {
+                const { doc, startY } = createPdfDoc("LAPORAN INVENTARIS SAPROTAN & ANALISIS USAHA TANI", "Kegiatan Inventaris & Usaha Tani");
+                appendFinanceSectionPDF(doc, startY);
+                finishPdfDoc(doc, `Inventaris_Usaha_Tani_${safeUser}.pdf`);
+            } else if (activityKey === "references") {
+                const { doc, startY } = createPdfDoc("PUSTAKA & JURNAL ILMIAH AGRONOMI VALID", "Referensi Ilmiah");
+                let y = addSectionHeaderPDF(doc, "DAFTAR LITERATUR & JURNAL PENDUKUNG", startY);
+                const rows = SCIENTIFIC_REFERENCES.map(r => [`${r.title} (${r.year})`, `${r.authors}\n${r.url || ""}`, r.relevance]);
+                doc.autoTable({
+                    startY: y,
+                    head: [["Judul & Tahun", "Penulis/Sumber & Akses", "Relevansi Agronomi"]],
+                    body: rows,
+                    theme: "grid",
+                    styles: { fontSize: 8, cellPadding: 2 },
+                    headStyles: { fillColor: [5, 150, 105], textColor: 255 },
+                    margin: { left: 14, right: 14 }
+                });
+                finishPdfDoc(doc, `Pustaka_Jurnal_Melon_${safeUser}.pdf`);
+            }
+        }
+        function downloadAllActivitiesPDF() {
+            if (!window.jspdf || !window.jspdf.jsPDF) {
+                showToast("Pustaka PDF sedang dimuat, coba beberapa detik lagi.", "warning");
+                return;
+            }
+            const safeUser = currentUser.replace(/[^a-zA-Z0-9_-]/g, "_");
+            const { doc, startY } = createPdfDoc("REKAPITULASI LENGKAP SELURUH KEGIATAN GREENHOUSE", "Rekap Terpadu Seluruh Modul");
+            let y = appendMonitoringSectionPDF(doc, startY);
+            y = appendSopSectionPDF(doc, y);
+            y = appendDripSopSectionPDF(doc, y);
+            y = appendCalculatorSectionPDF(doc, y);
+            y = appendLogbookSectionPDF(doc, y);
+            y = appendDiagnosticsSectionPDF(doc, y);
+            appendFinanceSectionPDF(doc, y);
+            finishPdfDoc(doc, `Rekap_Seluruh_Kegiatan_Melon_${safeUser}.pdf`);
+        }
+        // -------------------------------------------------------------------------
+        // 13. INITIALIZATION ON WINDOW LOAD
+        // -------------------------------------------------------------------------
+        function initApp() {
+            document.getElementById("userProfileInput").value = currentUser;
+            document.getElementById("globalSystemSelect").value = appState.system;
+            document.getElementById("globalCultivarSelect").value = appState.cultivar;
+            document.getElementById("globalPhaseSelect").value = appState.phase;
+            document.getElementById("batch-name").value = appState.batch.name;
+            document.getElementById("batch-transplantDate").value = appState.batch.transplantDate;
+            document.getElementById("batch-pollinationDate").value = appState.batch.pollinationDate;
+            document.getElementById("log-date").value = new Date().toISOString().split('T')[0];
+            updateGlobalBanner();
+            renderDashboard();
+            renderSOP();
+            calculateNutrients();
+            updateHarvestTimeline();
+            renderMaintenanceLogs();
+            renderDiagnostics(currentDiagFilter);
+            calculateFinance();
+            renderInventory();
+            renderReferences();
+            lucide.createIcons();
+        }
+        window.addEventListener("DOMContentLoaded", initApp);
+    </script>
+</body>
+</html>
