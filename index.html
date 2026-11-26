@@ -44,6 +44,18 @@
             color: #ffffff;
             box-shadow: 0 4px 12px rgba(5, 150, 105, 0.25);
         }
+        /* Mobile Sidebar & Responsive Drawer Styles */
+        @media (max-width: 1023px) {
+            #mobileSidebarDrawer {
+                transition: transform 0.28s cubic-bezier(0.4, 0, 0.2, 1);
+            }
+            #mobileSidebarDrawer.sidebar-closed {
+                transform: translateX(-100%);
+            }
+            #mobileSidebarDrawer.sidebar-open {
+                transform: translateX(0);
+            }
+        }
         /* Custom scrollbar */
         ::-webkit-scrollbar {
             width: 6px;
@@ -61,44 +73,130 @@
         }
     </style>
 </head>
-<body class="bg-slate-50 text-slate-800 font-sans antialiased selection:bg-emerald-200 selection:text-emerald-950">
+<body class="bg-slate-50 text-slate-800 font-sans antialiased selection:bg-emerald-200 selection:text-emerald-950 overflow-x-hidden">
     <!-- Toast Notification Container (Pengganti alert/confirm bawaan browser) -->
-    <div id="toastContainer" class="fixed bottom-5 right-5 z-50 flex flex-col gap-2 max-w-sm w-full pointer-events-none"></div>
+    <div id="toastContainer" class="fixed bottom-4 left-4 right-4 sm:left-auto sm:bottom-5 sm:right-5 z-50 flex flex-col gap-2 sm:max-w-sm w-auto pointer-events-none"></div>
+
+    <!-- Mobile Sidebar Backdrop Overlay -->
+    <div id="mobileSidebarBackdrop" onclick="closeMobileSidebar()" class="fixed inset-0 z-50 bg-slate-950/60 backdrop-blur-xs hidden lg:hidden transition-opacity"></div>
+
+    <!-- Mobile Slide-Out Sidebar Navigation (Khusus Smartphone & Tablet) -->
+    <aside id="mobileSidebarDrawer" class="sidebar-closed fixed inset-y-0 left-0 z-50 w-72 max-w-[85vw] bg-emerald-950 text-white border-r border-emerald-800/80 shadow-2xl flex flex-col justify-between lg:hidden" aria-label="Menu Navigasi Mobile">
+        <div class="p-4 border-b border-emerald-800/80 flex items-center justify-between">
+            <div class="flex items-center gap-2.5">
+                <div class="w-9 h-9 rounded-xl bg-gradient-to-br from-emerald-400 to-emerald-600 flex items-center justify-center shadow-inner shrink-0">
+                    <i data-lucide="sprout" class="w-5 h-5 text-emerald-950"></i>
+                </div>
+                <div>
+                    <div class="font-display font-extrabold text-base tracking-tight text-white">GreenHouse <span class="text-melon-400">Bejo GH</span></div>
+                    <span class="text-[11px] text-emerald-300 block">Menu Fitur Budidaya</span>
+                </div>
+            </div>
+            <button type="button" onclick="closeMobileSidebar()" aria-label="Tutup Menu" class="p-2 rounded-xl bg-emerald-900/90 hover:bg-emerald-800 text-emerald-200 hover:text-white transition">
+                <i data-lucide="x" class="w-5 h-5"></i>
+            </button>
+        </div>
+
+        <!-- Mobile Sidebar Menu Items -->
+        <div class="flex-1 overflow-y-auto p-3 space-y-1.5">
+            <div class="px-2.5 py-1 text-[10px] font-bold uppercase tracking-wider text-emerald-400">Pilih Modul &amp; Fitur</div>
+            <button onclick="switchTab('about'); closeMobileSidebar();" id="m-nav-about" class="nav-btn tab-active w-full flex items-center gap-3 px-3.5 py-3 rounded-xl text-sm font-semibold text-left transition">
+                <i data-lucide="home" class="w-4 h-4 shrink-0"></i>
+                <span>0. Tentang Kami</span>
+            </button>
+            <button onclick="switchTab('dashboard'); closeMobileSidebar();" id="m-nav-dashboard" class="nav-btn w-full flex items-center gap-3 px-3.5 py-3 rounded-xl text-sm font-semibold text-left text-emerald-200 hover:bg-emerald-900/90 transition">
+                <i data-lucide="activity" class="w-4 h-4 shrink-0"></i>
+                <span>1. Monitoring &amp; VPD</span>
+            </button>
+            <button onclick="switchTab('sop'); closeMobileSidebar();" id="m-nav-sop" class="nav-btn w-full flex items-center gap-3 px-3.5 py-3 rounded-xl text-sm font-semibold text-left text-emerald-200 hover:bg-emerald-900/90 transition">
+                <i data-lucide="clipboard-check" class="w-4 h-4 shrink-0"></i>
+                <span>2. SOP &amp; Checklist Fase</span>
+            </button>
+            <button onclick="switchTab('calculator'); closeMobileSidebar();" id="m-nav-calculator" class="nav-btn w-full flex items-center gap-3 px-3.5 py-3 rounded-xl text-sm font-semibold text-left text-emerald-200 hover:bg-emerald-900/90 transition">
+                <i data-lucide="calculator" class="w-4 h-4 shrink-0"></i>
+                <span>3. Kalkulator Nutrisi</span>
+            </button>
+            <button onclick="switchTab('logbook'); closeMobileSidebar();" id="m-nav-logbook" class="nav-btn w-full flex items-center gap-3 px-3.5 py-3 rounded-xl text-sm font-semibold text-left text-emerald-200 hover:bg-emerald-900/90 transition">
+                <i data-lucide="calendar-days" class="w-4 h-4 shrink-0"></i>
+                <span>4. Logbook &amp; Panen</span>
+            </button>
+            <button onclick="switchTab('diagnostics'); closeMobileSidebar();" id="m-nav-diagnostics" class="nav-btn w-full flex items-center gap-3 px-3.5 py-3 rounded-xl text-sm font-semibold text-left text-emerald-200 hover:bg-emerald-900/90 transition">
+                <i data-lucide="stethoscope" class="w-4 h-4 shrink-0"></i>
+                <span>5. Diagnostik Hama</span>
+            </button>
+            <button onclick="switchTab('finance'); closeMobileSidebar();" id="m-nav-finance" class="nav-btn w-full flex items-center gap-3 px-3.5 py-3 rounded-xl text-sm font-semibold text-left text-emerald-200 hover:bg-emerald-900/90 transition">
+                <i data-lucide="coins" class="w-4 h-4 shrink-0"></i>
+                <span>6. Inventaris &amp; Usaha Tani</span>
+            </button>
+            <button onclick="switchTab('references'); closeMobileSidebar();" id="m-nav-references" class="nav-btn w-full flex items-center gap-3 px-3.5 py-3 rounded-xl text-sm font-semibold text-left text-emerald-200 hover:bg-emerald-900/90 transition">
+                <i data-lucide="book-open" class="w-4 h-4 shrink-0"></i>
+                <span>7. Pustaka &amp; Jurnal Valid</span>
+            </button>
+        </div>
+
+        <!-- Mobile Sidebar Quick Actions -->
+        <div class="p-3.5 border-t border-emerald-800/80 bg-emerald-900/40 space-y-2">
+            <button onclick="downloadAllActivitiesPDF(); closeMobileSidebar();" class="w-full flex items-center justify-center gap-2 px-3.5 py-2.5 rounded-xl bg-melon-500 hover:bg-melon-600 text-emerald-950 text-xs font-extrabold transition shadow-sm">
+                <i data-lucide="file-down" class="w-4 h-4"></i>
+                <span>Download PDF Rekap Semua</span>
+            </button>
+            <button onclick="closeMobileSidebar(); openResetModal();" class="w-full flex items-center justify-center gap-2 px-3.5 py-2 rounded-xl bg-emerald-900 hover:bg-rose-600 text-emerald-200 hover:text-white text-xs font-semibold transition">
+                <i data-lucide="rotate-ccw" class="w-3.5 h-3.5"></i>
+                <span>Reset Data ke Awal</span>
+            </button>
+        </div>
+    </aside>
+
     <!-- Top Header & Global System Selector -->
     <header class="sticky top-0 z-40 bg-emerald-950 text-white border-b border-emerald-800/70 shadow-lg">
-        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-            <div class="flex flex-col lg:flex-row lg:items-center lg:justify-between py-3.5 gap-3">
-                <!-- Brand Identity -->
-                <div class="flex items-center justify-between">
-                    <div class="flex items-center gap-3">
-                        <div class="w-10 h-10 rounded-xl bg-gradient-to-br from-emerald-400 to-emerald-600 flex items-center justify-center shadow-inner">
-                            <i data-lucide="sprout" class="w-6 h-6 text-emerald-950"></i>
+        <div class="max-w-7xl mx-auto px-3 sm:px-6 lg:px-8">
+            <div class="flex flex-col lg:flex-row lg:items-center lg:justify-between py-2.5 sm:py-3.5 gap-2.5 sm:gap-3">
+                <!-- Brand Identity + Mobile Sidebar Hamburger Button -->
+                <div class="flex items-center justify-between gap-2">
+                    <div class="flex items-center gap-2.5 sm:gap-3 min-w-0">
+                        <!-- Hamburger Button for Smartphone Sidebar -->
+                        <button type="button" onclick="openMobileSidebar()" aria-label="Buka Menu Sidebar" class="lg:hidden p-2 rounded-xl bg-emerald-900 hover:bg-emerald-800 text-white border border-emerald-700/80 shrink-0 active:scale-95 transition">
+                            <i data-lucide="menu" class="w-5 h-5 text-melon-400"></i>
+                        </button>
+                        <div class="w-9 h-9 sm:w-10 sm:h-10 rounded-xl bg-gradient-to-br from-emerald-400 to-emerald-600 flex items-center justify-center shadow-inner shrink-0">
+                            <i data-lucide="sprout" class="w-5 h-5 sm:w-6 sm:h-6 text-emerald-950"></i>
                         </div>
-                        <div>
+                        <div class="min-w-0">
                             <div class="flex items-center gap-2">
-                                <h1 class="font-display font-extrabold text-lg sm:text-xl tracking-tight text-white">GreenHouse <span class="text-melon-400">Bejo GH</span></h1>
+                                <h1 class="font-display font-extrabold text-base sm:text-xl tracking-tight text-white truncate">GreenHouse <span class="text-melon-400">Bejo GH</span></h1>
                                 <span class="hidden sm:inline-flex items-center px-2 py-0.5 rounded-full text-[11px] font-semibold bg-emerald-800/90 text-emerald-200 border border-emerald-700">SOP Tervalidasi</span>
                             </div>
-                            <p class="text-xs text-emerald-300/90">Sistem Kontrol &amp; SOP Budidaya Melon Greenhouse (NFT • DFT • Rakit Apung • Drip System)</p>
+                            <p class="text-[11px] sm:text-xs text-emerald-300/90 truncate">Sistem Kontrol &amp; SOP Budidaya Melon Greenhouse</p>
                         </div>
                     </div>
-                    <!-- Reset / Quick Status Button on Mobile -->
-                    <button onclick="openResetModal()" title="Reset Data ke Awal" class="lg:hidden p-2 rounded-lg bg-emerald-900 hover:bg-emerald-800 text-emerald-200 text-xs flex items-center gap-1">
-                        <i data-lucide="rotate-ccw" class="w-4 h-4"></i>
-                    </button>
+                    <!-- Mobile Quick Controls Toggle & Reset -->
+                    <div class="flex items-center gap-1.5 lg:hidden shrink-0">
+                        <button type="button" onclick="toggleMobileConfigPanel()" id="mobileConfigToggleBtn" title="Atur Sistem, Varietas & Fase" class="px-2.5 py-2 rounded-xl bg-emerald-900 hover:bg-emerald-800 text-emerald-100 border border-emerald-700/80 text-[11px] font-bold flex items-center gap-1">
+                            <i data-lucide="sliders-horizontal" class="w-3.5 h-3.5 text-melon-400"></i>
+                            <span class="hidden xs:inline">Pengaturan</span>
+                        </button>
+                        <button onclick="openResetModal()" title="Reset Data ke Awal" class="p-2 rounded-xl bg-emerald-900 hover:bg-emerald-800 text-emerald-200 border border-emerald-700/80 text-xs flex items-center gap-1">
+                            <i data-lucide="rotate-ccw" class="w-4 h-4"></i>
+                        </button>
+                    </div>
                 </div>
+
                 <!-- Global Controls: User Database Profile, System Type, Cultivar, Growth Phase & PDF Rekap -->
-                <div class="flex flex-wrap items-center gap-2 sm:gap-2.5 bg-emerald-900/70 p-2 rounded-xl border border-emerald-800/80">
+                <div id="globalConfigWrapper" class="hidden lg:flex flex-col sm:flex-row sm:flex-wrap items-stretch sm:items-center gap-2 sm:gap-2.5 bg-emerald-900/70 p-2.5 sm:p-2 rounded-xl border border-emerald-800/80">
                     <!-- User Database Profile Switcher (Auto-save per user) -->
-                    <div class="flex items-center gap-1.5 bg-emerald-950/90 px-2.5 py-1.5 rounded-lg border border-emerald-700/70">
-                        <i data-lucide="user-check" class="w-3.5 h-3.5 text-emerald-300"></i>
-                        <label for="userProfileInput" class="text-[11px] text-emerald-300 font-medium">User:</label>
-                        <input id="userProfileInput" type="text" value="Petani_Utama" onchange="handleUserProfileChange()" title="Database otomatis tersimpan per nama pengguna" class="w-24 sm:w-28 bg-transparent text-xs font-bold text-white focus:outline-none border-b border-emerald-600/60 focus:border-melon-400">
+                    <div class="flex items-center justify-between sm:justify-start gap-1.5 bg-emerald-950/90 px-2.5 py-2 sm:py-1.5 rounded-lg border border-emerald-700/70">
+                        <div class="flex items-center gap-1.5">
+                            <i data-lucide="user-check" class="w-3.5 h-3.5 text-emerald-300 shrink-0"></i>
+                            <label for="userProfileInput" class="text-[11px] text-emerald-300 font-medium">User:</label>
+                        </div>
+                        <input id="userProfileInput" type="text" value="Petani_Utama" onchange="handleUserProfileChange()" title="Database otomatis tersimpan per nama pengguna" class="w-32 sm:w-28 bg-transparent text-xs font-bold text-white text-right sm:text-left focus:outline-none border-b border-emerald-600/60 focus:border-melon-400">
                     </div>
                     <!-- Hydroponic System Selector -->
-                    <div class="flex items-center gap-1.5 bg-emerald-950/90 px-2.5 py-1.5 rounded-lg border border-emerald-700/70">
-                        <i data-lucide="waves" class="w-3.5 h-3.5 text-melon-400"></i>
-                        <label for="globalSystemSelect" class="text-[11px] text-emerald-300 font-medium">Sistem:</label>
+                    <div class="flex items-center justify-between sm:justify-start gap-1.5 bg-emerald-950/90 px-2.5 py-2 sm:py-1.5 rounded-lg border border-emerald-700/70">
+                        <div class="flex items-center gap-1.5">
+                            <i data-lucide="waves" class="w-3.5 h-3.5 text-melon-400 shrink-0"></i>
+                            <label for="globalSystemSelect" class="text-[11px] text-emerald-300 font-medium">Sistem:</label>
+                        </div>
                         <select id="globalSystemSelect" onchange="handleGlobalConfigChange()" class="bg-transparent text-xs font-bold text-white focus:outline-none cursor-pointer">
                             <option value="NFT" class="bg-emerald-950 text-white">NFT (Nutrient Film)</option>
                             <option value="DFT" class="bg-emerald-950 text-white">DFT (Deep Flow)</option>
@@ -107,9 +205,11 @@
                         </select>
                     </div>
                     <!-- Melon Cultivar Selector -->
-                    <div class="flex items-center gap-1.5 bg-emerald-950/90 px-2.5 py-1.5 rounded-lg border border-emerald-700/70">
-                        <i data-lucide="award" class="w-3.5 h-3.5 text-emerald-400"></i>
-                        <label for="globalCultivarSelect" class="text-[11px] text-emerald-300 font-medium">Varietas:</label>
+                    <div class="flex items-center justify-between sm:justify-start gap-1.5 bg-emerald-950/90 px-2.5 py-2 sm:py-1.5 rounded-lg border border-emerald-700/70">
+                        <div class="flex items-center gap-1.5">
+                            <i data-lucide="award" class="w-3.5 h-3.5 text-emerald-400 shrink-0"></i>
+                            <label for="globalCultivarSelect" class="text-[11px] text-emerald-300 font-medium">Varietas:</label>
+                        </div>
                         <select id="globalCultivarSelect" onchange="handleGlobalConfigChange()" class="bg-transparent text-xs font-bold text-white focus:outline-none cursor-pointer">
                             <option value="Intanon RZ" class="bg-emerald-950 text-white">Intanon RZ (Net Emas)</option>
                             <option value="Fujisawa" class="bg-emerald-950 text-white">Fujisawa (Jepang)</option>
@@ -118,9 +218,11 @@
                         </select>
                     </div>
                     <!-- Active Growth Phase Selector -->
-                    <div class="flex items-center gap-1.5 bg-emerald-950/90 px-2.5 py-1.5 rounded-lg border border-emerald-700/70">
-                        <i data-lucide="calendar-clock" class="w-3.5 h-3.5 text-sky-400"></i>
-                        <label for="globalPhaseSelect" class="text-[11px] text-emerald-300 font-medium">Fase:</label>
+                    <div class="flex items-center justify-between sm:justify-start gap-1.5 bg-emerald-950/90 px-2.5 py-2 sm:py-1.5 rounded-lg border border-emerald-700/70">
+                        <div class="flex items-center gap-1.5">
+                            <i data-lucide="calendar-clock" class="w-3.5 h-3.5 text-sky-400 shrink-0"></i>
+                            <label for="globalPhaseSelect" class="text-[11px] text-emerald-300 font-medium">Fase:</label>
+                        </div>
                         <select id="globalPhaseSelect" onchange="handleGlobalConfigChange()" class="bg-transparent text-xs font-bold text-white focus:outline-none cursor-pointer">
                             <option value="0" class="bg-emerald-950 text-white">1. Persemaian (0–10 HSS)</option>
                             <option value="1" class="bg-emerald-950 text-white">2. Pindah Tanam (1–7 HST)</option>
@@ -131,7 +233,7 @@
                         </select>
                     </div>
                     <!-- Download PDF Rekap Seluruh Kegiatan -->
-                    <button onclick="downloadAllActivitiesPDF()" title="Unduh Laporan PDF Rekap Seluruh Kegiatan" class="flex items-center gap-1.5 px-2.5 py-1.5 rounded-lg bg-melon-500 hover:bg-melon-600 text-emerald-950 text-xs font-extrabold transition shadow-sm cursor-pointer">
+                    <button onclick="downloadAllActivitiesPDF()" title="Unduh Laporan PDF Rekap Seluruh Kegiatan" class="flex items-center justify-center gap-1.5 px-3 py-2 sm:py-1.5 rounded-lg bg-melon-500 hover:bg-melon-600 text-emerald-950 text-xs font-extrabold transition shadow-sm cursor-pointer">
                         <i data-lucide="file-down" class="w-3.5 h-3.5"></i>
                         <span>PDF Rekap Semua</span>
                     </button>
@@ -142,8 +244,19 @@
                     </button>
                 </div>
             </div>
-            <!-- Navigation Tabs -->
-            <nav class="flex items-center gap-1.5 overflow-x-auto pb-3 pt-1 no-scrollbar" aria-label="Menu Utama">
+
+            <!-- Mobile Active Feature Pill Bar (Memudahkan akses sidebar & menunjukkan fitur aktif di HP) -->
+            <div class="flex lg:hidden items-center justify-between gap-2 pb-2.5 pt-0.5 text-xs">
+                <button type="button" onclick="openMobileSidebar()" class="flex items-center gap-2 px-3 py-1.5 rounded-xl bg-emerald-600 text-white font-bold shadow-sm active:scale-95 transition truncate">
+                    <i data-lucide="panel-left" class="w-3.5 h-3.5 shrink-0"></i>
+                    <span id="mobileActiveTabLabel" class="truncate">0. Tentang Kami</span>
+                    <i data-lucide="chevron-down" class="w-3.5 h-3.5 shrink-0 opacity-80"></i>
+                </button>
+                <span id="mobileQuickSystemBadge" class="px-2.5 py-1.5 rounded-xl bg-emerald-900/90 border border-emerald-700/70 text-[11px] font-semibold text-melon-400 shrink-0">NFT • Fase 3</span>
+            </div>
+
+            <!-- Desktop Navigation Tabs (Tampil di layar besar lg ke atas) -->
+            <nav class="hidden lg:flex items-center gap-1.5 overflow-x-auto pb-3 pt-1 no-scrollbar" aria-label="Menu Utama">
                 <button onclick="switchTab('about')" id="nav-about" class="nav-btn tab-active flex items-center gap-2 px-3.5 py-2 rounded-xl text-xs sm:text-sm font-semibold whitespace-nowrap transition">
                     <i data-lucide="home" class="w-4 h-4"></i>
                     <span>0. Tentang Kami</span>
@@ -180,7 +293,7 @@
         </div>
     </header>
     <!-- Main Workspace -->
-    <main class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-6 space-y-6">
+    <main class="max-w-7xl mx-auto px-3.5 sm:px-6 lg:px-8 py-4 sm:py-6 space-y-5 sm:space-y-6">
         <!-- Contextual Agronomic System Banner -->
         <div id="systemContextBanner" class="bg-white border border-emerald-200/80 rounded-2xl p-4 shadow-sm flex flex-col md:flex-row md:items-center justify-between gap-4">
             <div class="flex items-start gap-3">
@@ -197,12 +310,12 @@
                     </p>
                 </div>
             </div>
-            <div class="flex items-center gap-2 shrink-0">
-                <button onclick="downloadActivityPDF('banner')" class="px-3 py-2 rounded-xl bg-slate-100 hover:bg-slate-200 text-slate-800 text-xs font-bold transition flex items-center gap-1.5 cursor-pointer">
+            <div class="flex flex-wrap items-center gap-2 shrink-0">
+                <button onclick="downloadActivityPDF('banner')" class="flex-1 sm:flex-none justify-center px-3 py-2.5 sm:py-2 rounded-xl bg-slate-100 hover:bg-slate-200 text-slate-800 text-xs font-bold transition flex items-center gap-1.5 cursor-pointer">
                     <i data-lucide="file-down" class="w-3.5 h-3.5 text-emerald-700"></i>
                     <span>PDF Ringkasan Sistem</span>
                 </button>
-                <button onclick="switchTab('sop')" class="px-3.5 py-2 rounded-xl bg-emerald-600 hover:bg-emerald-700 text-white text-xs font-semibold transition flex items-center gap-1.5 shadow-sm">
+                <button onclick="switchTab('sop')" class="flex-1 sm:flex-none justify-center px-3.5 py-2.5 sm:py-2 rounded-xl bg-emerald-600 hover:bg-emerald-700 text-white text-xs font-semibold transition flex items-center gap-1.5 shadow-sm">
                     <span>Buka Checklist SOP</span>
                     <i data-lucide="arrow-right" class="w-3.5 h-3.5"></i>
                 </button>
@@ -213,41 +326,41 @@
         <!-- ===================================================================== -->
         <section id="tab-about" class="tab-section space-y-6">
             <!-- Hero Profile Banner -->
-            <div class="bg-gradient-to-br from-emerald-950 via-emerald-900 to-emerald-850 text-white rounded-3xl p-6 sm:p-8 shadow-lg border border-emerald-800 relative overflow-hidden">
+            <div class="bg-gradient-to-br from-emerald-950 via-emerald-900 to-emerald-850 text-white rounded-3xl p-5 sm:p-8 shadow-lg border border-emerald-800 relative overflow-hidden">
                 <div class="flex flex-col lg:flex-row lg:items-center justify-between gap-6 relative z-10">
                     <div class="space-y-3 max-w-2xl">
                         <span class="inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-xs font-bold bg-melon-500/20 text-melon-400 border border-melon-400/30">
                             <i data-lucide="sparkles" class="w-3.5 h-3.5"></i>
                             <span>Profil &amp; Identitas Greenhouse Modern</span>
                         </span>
-                        <h2 class="font-display font-extrabold text-2xl sm:text-3xl leading-tight">
+                        <h2 class="font-display font-extrabold text-xl sm:text-3xl leading-tight">
                             Tentang <span class="text-melon-400">GreenHouse Bejo GH</span> — Budidaya Melon Premium Berbasis Presisi Agronomi
                         </h2>
                         <p class="text-xs sm:text-sm text-emerald-100/90 leading-relaxed">
                             GreenHouse Bejo GH adalah unit agribisnis hortikultura modern yang berfokus pada produksi buah melon eksklusif (<em>Cucumis melo</em> L.) berkualitas tinggi dengan sistem hidroponik terukur (<strong>NFT, DFT, Rakit Apung &amp; Drip System</strong>). Setiap tanaman dirawat melalui pemantauan parameter nutrisi (EC/PPM), pH larutan, dan iklim mikro (VPD) untuk menghasilkan buah berjaring rapat, renyah, dan tingkat kemanisan konsisten di atas <strong>14 °Brix</strong>.
                         </p>
                         <div class="flex flex-wrap gap-2.5 pt-2">
-                            <button onclick="switchTab('dashboard')" class="px-4 py-2.5 rounded-xl bg-emerald-500 hover:bg-emerald-400 text-emerald-950 font-bold text-xs transition flex items-center gap-1.5 shadow-sm">
+                            <button onclick="switchTab('dashboard')" class="w-full sm:w-auto justify-center px-4 py-2.5 rounded-xl bg-emerald-500 hover:bg-emerald-400 text-emerald-950 font-bold text-xs transition flex items-center gap-1.5 shadow-sm">
                                 <i data-lucide="activity" class="w-4 h-4"></i>
                                 <span>Lihat Monitoring Kebun</span>
                             </button>
-                            <button onclick="switchTab('sop')" class="px-4 py-2.5 rounded-xl bg-emerald-800/80 hover:bg-emerald-800 text-white border border-emerald-700 font-semibold text-xs transition flex items-center gap-1.5">
+                            <button onclick="switchTab('sop')" class="w-full sm:w-auto justify-center px-4 py-2.5 rounded-xl bg-emerald-800/80 hover:bg-emerald-800 text-white border border-emerald-700 font-semibold text-xs transition flex items-center gap-1.5">
                                 <i data-lucide="clipboard-check" class="w-4 h-4 text-melon-400"></i>
                                 <span>Pelajari SOP Budidaya</span>
                             </button>
-                            <button onclick="downloadActivityPDF('about')" class="px-4 py-2.5 rounded-xl bg-white/10 hover:bg-white/20 text-white border border-white/20 font-semibold text-xs transition flex items-center gap-1.5 cursor-pointer">
+                            <button onclick="downloadActivityPDF('about')" class="w-full sm:w-auto justify-center px-4 py-2.5 rounded-xl bg-white/10 hover:bg-white/20 text-white border border-white/20 font-semibold text-xs transition flex items-center gap-1.5 cursor-pointer">
                                 <i data-lucide="file-down" class="w-4 h-4 text-melon-400"></i>
                                 <span>Download PDF Profil GH</span>
                             </button>
                         </div>
                     </div>
                     <!-- Key Greenhouse Stats Card -->
-                    <div class="bg-emerald-950/80 border border-emerald-700/70 rounded-2xl p-5 lg:w-96 shrink-0 space-y-3.5">
+                    <div class="bg-emerald-950/80 border border-emerald-700/70 rounded-2xl p-4 sm:p-5 lg:w-96 shrink-0 space-y-3.5">
                         <div class="flex items-center justify-between border-b border-emerald-800 pb-2.5">
                             <span class="text-xs font-bold uppercase tracking-wider text-emerald-300">Spesifikasi Fasilitas</span>
                             <span class="text-[11px] font-semibold px-2 py-0.5 rounded-full bg-emerald-500/20 text-emerald-300">Aktif Berproduksi</span>
                         </div>
-                        <div class="grid grid-cols-2 gap-3 text-xs">
+                        <div class="grid grid-cols-1 xs:grid-cols-2 sm:grid-cols-2 gap-3 text-xs">
                             <div class="p-3 rounded-xl bg-emerald-900/60 border border-emerald-800/80">
                                 <span class="text-emerald-300 block">Kapasitas Populasi</span>
                                 <span class="font-display font-extrabold text-lg text-white mt-0.5 block">1.200+ Pohon</span>
@@ -275,7 +388,7 @@
             <!-- Visi, Misi & Pilar Keunggulan -->
             <div class="grid grid-cols-1 lg:grid-cols-12 gap-6">
                 <!-- Visi & Misi -->
-                <div class="lg:col-span-5 bg-white rounded-2xl p-6 border border-slate-200/80 shadow-sm space-y-4">
+                <div class="lg:col-span-5 bg-white rounded-2xl p-5 sm:p-6 border border-slate-200/80 shadow-sm space-y-4">
                     <div class="flex items-center gap-2.5 text-emerald-800">
                         <div class="p-2 rounded-xl bg-emerald-100">
                             <i data-lucide="compass" class="w-5 h-5 text-emerald-700"></i>
@@ -305,7 +418,7 @@
                     </div>
                 </div>
                 <!-- 4 Sistem Instalasi yang Dikelola -->
-                <div class="lg:col-span-7 bg-white rounded-2xl p-6 border border-slate-200/80 shadow-sm space-y-4">
+                <div class="lg:col-span-7 bg-white rounded-2xl p-5 sm:p-6 border border-slate-200/80 shadow-sm space-y-4">
                     <div class="flex items-center justify-between border-b border-slate-100 pb-3">
                         <div>
                             <h3 class="font-display font-bold text-lg text-slate-900">Teknologi Hidroponik yang Kami Terapkan</h3>
@@ -353,7 +466,7 @@
                     <!-- Varietas Unggulan -->
                     <div class="pt-2">
                         <span class="text-xs font-bold text-slate-700 block mb-2">Kultivar Melon Unggulan di Greenhouse Kami:</span>
-                        <div class="grid grid-cols-2 sm:grid-cols-4 gap-2.5 text-xs">
+                        <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-2.5 text-xs">
                             <div class="p-2.5 rounded-xl bg-emerald-50/70 border border-emerald-200/70">
                                 <strong class="text-emerald-950 block">Intanon RZ</strong>
                                 <span class="text-[11px] text-slate-600">Kulit emas berjaring, daging hijau lembut</span>
@@ -375,7 +488,7 @@
                 </div>
             </div>
             <!-- Layanan & Kunjungan Greenhouse -->
-            <div class="bg-white rounded-2xl p-6 border border-slate-200/80 shadow-sm flex flex-col md:flex-row items-start md:items-center justify-between gap-6">
+            <div class="bg-white rounded-2xl p-5 sm:p-6 border border-slate-200/80 shadow-sm flex flex-col md:flex-row items-start md:items-center justify-between gap-6">
                 <div class="space-y-1.5 max-w-2xl">
                     <div class="flex items-center gap-2 text-emerald-700 font-bold text-xs uppercase tracking-wider">
                         <i data-lucide="map-pin" class="w-4 h-4"></i>
@@ -386,12 +499,12 @@
                         Kami melayani pemesanan melon segar langsung dari kebun (petik saat matang optimal), kerja sama pasokan supermarket/horeca, serta pelatihan teknis manajemen nutrisi dan SOP greenhouse.
                     </p>
                 </div>
-                <div class="flex flex-wrap gap-2.5 shrink-0">
-                    <button onclick="switchTab('finance')" class="px-4 py-2.5 rounded-xl bg-slate-100 hover:bg-slate-200 text-slate-800 text-xs font-bold transition flex items-center gap-1.5">
+                <div class="flex flex-wrap gap-2.5 w-full md:w-auto shrink-0">
+                    <button onclick="switchTab('finance')" class="flex-1 md:flex-none justify-center px-4 py-2.5 rounded-xl bg-slate-100 hover:bg-slate-200 text-slate-800 text-xs font-bold transition flex items-center gap-1.5">
                         <i data-lucide="bar-chart-3" class="w-4 h-4 text-emerald-600"></i>
                         <span>Simulasi Usaha Tani</span>
                     </button>
-                    <button onclick="switchTab('references')" class="px-4 py-2.5 rounded-xl bg-emerald-600 hover:bg-emerald-700 text-white text-xs font-bold transition flex items-center gap-1.5">
+                    <button onclick="switchTab('references')" class="flex-1 md:flex-none justify-center px-4 py-2.5 rounded-xl bg-emerald-600 hover:bg-emerald-700 text-white text-xs font-bold transition flex items-center gap-1.5">
                         <i data-lucide="book-open-check" class="w-4 h-4"></i>
                         <span>Standar Ilmiah Kami</span>
                     </button>
@@ -405,15 +518,15 @@
             <!-- Section Header with PDF Download & Manual Reset VPD/KPA -->
             <div class="bg-white rounded-2xl p-4 sm:p-5 border border-slate-200/80 shadow-sm flex flex-col sm:flex-row sm:items-center justify-between gap-3">
                 <div>
-                    <h2 class="font-display font-bold text-lg text-slate-900">Monitoring Parameter Nutrisi (TDS/EC), pH &amp; Iklim Mikro (VPD / kPa)</h2>
+                    <h2 class="font-display font-bold text-base sm:text-lg text-slate-900">Monitoring Parameter Nutrisi (TDS/EC), pH &amp; Iklim Mikro (VPD / kPa)</h2>
                     <p class="text-xs text-slate-500">Data tersimpan otomatis pada database pengguna aktif (<strong id="activeUserLabelDashboard" class="text-emerald-700">Petani_Utama</strong>) dan dapat di-reset manual kapan saja.</p>
                 </div>
                 <div class="flex flex-wrap items-center gap-2">
-                    <button type="button" onclick="resetVpdAndMonitoringManual()" class="px-3.5 py-2 rounded-xl bg-amber-50 hover:bg-amber-100 text-amber-900 border border-amber-200 text-xs font-bold transition flex items-center gap-1.5 cursor-pointer">
+                    <button type="button" onclick="resetVpdAndMonitoringManual()" class="flex-1 sm:flex-none justify-center px-3.5 py-2.5 sm:py-2 rounded-xl bg-amber-50 hover:bg-amber-100 text-amber-900 border border-amber-200 text-xs font-bold transition flex items-center gap-1.5 cursor-pointer">
                         <i data-lucide="refresh-cw" class="w-3.5 h-3.5 text-amber-700"></i>
                         <span>Reset Monitoring &amp; VPD (kPa)</span>
                     </button>
-                    <button type="button" onclick="downloadActivityPDF('monitoring')" class="px-3.5 py-2 rounded-xl bg-emerald-600 hover:bg-emerald-700 text-white text-xs font-bold transition flex items-center gap-1.5 shadow-sm cursor-pointer">
+                    <button type="button" onclick="downloadActivityPDF('monitoring')" class="flex-1 sm:flex-none justify-center px-3.5 py-2.5 sm:py-2 rounded-xl bg-emerald-600 hover:bg-emerald-700 text-white text-xs font-bold transition flex items-center gap-1.5 shadow-sm cursor-pointer">
                         <i data-lucide="file-down" class="w-3.5 h-3.5"></i>
                         <span>Download PDF Monitoring</span>
                     </button>
@@ -471,7 +584,7 @@
                     <p class="text-[11px] text-slate-500 mt-2">Siang: 27–32°C | RH: 60–75%</p>
                 </div>
                 <!-- Vapor Pressure Deficit (VPD) -->
-                <div class="bg-gradient-to-br from-emerald-900 to-emerald-950 text-white rounded-2xl p-4 shadow-md">
+                <div class="bg-gradient-to-br from-emerald-900 to-emerald-950 text-white rounded-2xl p-4 shadow-md sm:col-span-2 lg:col-span-1">
                     <div class="flex items-center justify-between mb-2">
                         <span class="text-xs font-semibold text-emerald-300 uppercase tracking-wider">VPD Greenhouse</span>
                         <span id="badge-vpd" class="text-[11px] font-bold px-2 py-0.5 rounded-full bg-emerald-500/20 text-emerald-200 border border-emerald-400/30">Optimal</span>
@@ -486,7 +599,7 @@
             <!-- Input Sensor Manual & Grafik Dinamis -->
             <div class="grid grid-cols-1 lg:grid-cols-12 gap-6">
                 <!-- Form Input Pembacaan Harian -->
-                <div class="lg:col-span-4 bg-white rounded-2xl p-5 border border-slate-200/80 shadow-sm space-y-4">
+                <div class="lg:col-span-4 bg-white rounded-2xl p-4 sm:p-5 border border-slate-200/80 shadow-sm space-y-4">
                     <div class="flex items-center justify-between border-b border-slate-100 pb-3">
                         <div>
                             <h3 class="font-display font-bold text-slate-900 text-base">Catat Parameter Harian</h3>
@@ -497,46 +610,46 @@
                         <div class="grid grid-cols-2 gap-3">
                             <div>
                                 <label class="block text-xs font-semibold text-slate-700 mb-1">TDS / PPM</label>
-                                <input type="number" id="input-ppm" step="10" min="100" max="3000" value="1150" oninput="syncEcFromPpm()" required class="w-full px-3 py-2 rounded-xl border border-slate-300 text-sm focus:ring-2 focus:ring-emerald-500 focus:border-emerald-500 outline-none">
+                                <input type="number" id="input-ppm" step="10" min="100" max="3000" value="1150" oninput="syncEcFromPpm()" required class="w-full px-3 py-2.5 sm:py-2 rounded-xl border border-slate-300 text-sm focus:ring-2 focus:ring-emerald-500 focus:border-emerald-500 outline-none">
                             </div>
                             <div>
                                 <label class="block text-xs font-semibold text-slate-700 mb-1">Cek EC Meter (mS/cm)</label>
-                                <input type="number" id="input-ec" step="0.05" min="0.1" max="6.0" value="2.30" oninput="syncPpmFromEc()" required class="w-full px-3 py-2 rounded-xl border border-emerald-400 bg-emerald-50/40 text-emerald-950 font-semibold text-sm focus:ring-2 focus:ring-emerald-500 focus:border-emerald-500 outline-none">
+                                <input type="number" id="input-ec" step="0.05" min="0.1" max="6.0" value="2.30" oninput="syncPpmFromEc()" required class="w-full px-3 py-2.5 sm:py-2 rounded-xl border border-emerald-400 bg-emerald-50/40 text-emerald-950 font-semibold text-sm focus:ring-2 focus:ring-emerald-500 focus:border-emerald-500 outline-none">
                             </div>
                         </div>
-                        <div class="grid grid-cols-3 gap-2.5">
+                        <div class="grid grid-cols-3 gap-2">
                             <div>
-                                <label class="block text-xs font-semibold text-slate-700 mb-1">pH Larutan</label>
-                                <input type="number" id="input-ph" step="0.1" min="3.5" max="9.0" value="6.0" required class="w-full px-2.5 py-2 rounded-xl border border-slate-300 text-sm focus:ring-2 focus:ring-emerald-500 outline-none">
+                                <label class="block text-[11px] sm:text-xs font-semibold text-slate-700 mb-1">pH Larutan</label>
+                                <input type="number" id="input-ph" step="0.1" min="3.5" max="9.0" value="6.0" required class="w-full px-2.5 py-2.5 sm:py-2 rounded-xl border border-slate-300 text-sm focus:ring-2 focus:ring-emerald-500 outline-none">
                             </div>
                             <div>
-                                <label class="block text-xs font-semibold text-slate-700 mb-1">Suhu Air (°C)</label>
-                                <input type="number" id="input-waterTemp" step="0.1" min="10" max="45" value="25.4" required class="w-full px-2.5 py-2 rounded-xl border border-slate-300 text-sm focus:ring-2 focus:ring-emerald-500 outline-none">
+                                <label class="block text-[11px] sm:text-xs font-semibold text-slate-700 mb-1">Suhu Air (°C)</label>
+                                <input type="number" id="input-waterTemp" step="0.1" min="10" max="45" value="25.4" required class="w-full px-2.5 py-2.5 sm:py-2 rounded-xl border border-slate-300 text-sm focus:ring-2 focus:ring-emerald-500 outline-none">
                             </div>
                             <div>
-                                <label class="block text-xs font-semibold text-slate-700 mb-1">Suhu GH (°C)</label>
-                                <input type="number" id="input-airTemp" step="0.1" min="15" max="50" value="29.5" oninput="livePreviewVpd()" required class="w-full px-2.5 py-2 rounded-xl border border-slate-300 text-sm focus:ring-2 focus:ring-emerald-500 outline-none">
+                                <label class="block text-[11px] sm:text-xs font-semibold text-slate-700 mb-1">Suhu GH (°C)</label>
+                                <input type="number" id="input-airTemp" step="0.1" min="15" max="50" value="29.5" oninput="livePreviewVpd()" required class="w-full px-2.5 py-2.5 sm:py-2 rounded-xl border border-slate-300 text-sm focus:ring-2 focus:ring-emerald-500 outline-none">
                             </div>
                         </div>
                         <div class="grid grid-cols-2 gap-3">
                             <div>
                                 <label class="block text-xs font-semibold text-slate-700 mb-1">RH Udara (%)</label>
-                                <input type="number" id="input-rh" step="1" min="20" max="100" value="68" oninput="livePreviewVpd()" required class="w-full px-3 py-2 rounded-xl border border-slate-300 text-sm focus:ring-2 focus:ring-emerald-500 outline-none">
+                                <input type="number" id="input-rh" step="1" min="20" max="100" value="68" oninput="livePreviewVpd()" required class="w-full px-3 py-2.5 sm:py-2 rounded-xl border border-slate-300 text-sm focus:ring-2 focus:ring-emerald-500 outline-none">
                             </div>
                             <div>
                                 <label class="block text-xs font-semibold text-slate-700 mb-1">Pratinjau VPD (kPa)</label>
-                                <div id="live-vpd-preview" class="w-full px-3 py-2 rounded-xl bg-slate-100 border border-slate-200 text-sm font-bold text-emerald-800">1.32 kPa</div>
+                                <div id="live-vpd-preview" class="w-full px-3 py-2.5 sm:py-2 rounded-xl bg-slate-100 border border-slate-200 text-sm font-bold text-emerald-800">1.32 kPa</div>
                             </div>
                         </div>
                         <div>
                             <label class="block text-xs font-semibold text-slate-700 mb-1">Waktu Pengukuran</label>
-                            <select id="input-timeSlot" class="w-full px-3 py-2 rounded-xl border border-slate-300 text-sm focus:ring-2 focus:ring-emerald-500 outline-none">
+                            <select id="input-timeSlot" class="w-full px-3 py-2.5 sm:py-2 rounded-xl border border-slate-300 text-sm focus:ring-2 focus:ring-emerald-500 outline-none">
                                 <option value="Pagi (07:30)">Pagi (07:30 WIB) — Cek Awal</option>
                                 <option value="Siang (13:00)" selected>Siang (13:00 WIB) — Puncak Panas</option>
                                 <option value="Sore (17:00)">Sore (17:00 WIB) — Koreksi Nutrisi</option>
                             </select>
                         </div>
-                        <button type="submit" class="w-full py-2.5 px-4 rounded-xl bg-emerald-600 hover:bg-emerald-700 text-white font-semibold text-sm shadow-sm transition flex items-center justify-center gap-2">
+                        <button type="submit" class="w-full py-3 sm:py-2.5 px-4 rounded-xl bg-emerald-600 hover:bg-emerald-700 text-white font-semibold text-sm shadow-sm transition flex items-center justify-center gap-2">
                             <i data-lucide="save" class="w-4 h-4"></i>
                             <span>Simpan &amp; Analisis Parameter</span>
                         </button>
@@ -551,11 +664,11 @@
                     </div>
                 </div>
                 <!-- Grafik Tren PPM, pH, dan VPD (Custom Responsive SVG Chart) -->
-                <div class="lg:col-span-8 bg-white rounded-2xl p-5 border border-slate-200/80 shadow-sm flex flex-col justify-between">
+                <div class="lg:col-span-8 bg-white rounded-2xl p-4 sm:p-5 border border-slate-200/80 shadow-sm flex flex-col justify-between">
                     <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-2 mb-4">
                         <div>
                             <h3 class="font-display font-bold text-slate-900 text-base">Grafik Tren Nutrisi (PPM / EC) &amp; VPD Greenhouse</h3>
-                            <p class="text-xs text-slate-500">Riwayat pencatatan untuk mencegah fluktuasi EC ekstrem (penyebab buah pecah/cracking)</p>
+                            <p class="text-xs text-slate-500">Geser ke samping pada layar HP untuk melihat titik riwayat lengkap</p>
                         </div>
                         <div class="flex items-center gap-4 text-xs font-semibold">
                             <span class="flex items-center gap-1.5 text-emerald-700"><span class="w-3 h-3 rounded-full bg-emerald-500 inline-block"></span> PPM Nutrisi</span>
@@ -563,7 +676,7 @@
                         </div>
                     </div>
                     <!-- Responsive SVG Visualization Container -->
-                    <div class="w-full overflow-x-auto">
+                    <div class="w-full overflow-x-auto pb-1">
                         <div id="telemetryChartContainer" class="min-w-[520px] h-64 bg-slate-50/70 rounded-xl border border-slate-100 p-3 relative">
                             <!-- Rendered by JS -->
                         </div>
@@ -572,10 +685,10 @@
                     <div class="mt-4 pt-3 border-t border-slate-100">
                         <div class="flex items-center justify-between mb-2">
                             <span class="text-xs font-bold text-slate-700">Log Pengukuran Terakhir (Cek EC Meter, PPM &amp; VPD)</span>
-                            <span class="text-[11px] text-slate-400">Tersimpan di database pengguna</span>
+                            <span class="text-[11px] text-slate-400">Geser tabel ke samping</span>
                         </div>
                         <div class="overflow-x-auto">
-                            <table class="w-full text-left text-xs">
+                            <table class="w-full min-w-[540px] text-left text-xs">
                                 <thead>
                                     <tr class="text-slate-400 border-b border-slate-100">
                                         <th class="py-1.5 font-semibold">Waktu</th>
@@ -601,23 +714,25 @@
         <!-- TAB 2: MODUL PANDUAN SOP INTERAKTIF & CHECKLIST FASE TANAM            -->
         <!-- ===================================================================== -->
         <section id="tab-sop" class="tab-section hidden space-y-6">
-            <div class="bg-white rounded-2xl p-5 border border-slate-200/80 shadow-sm space-y-4">
+            <div class="bg-white rounded-2xl p-4 sm:p-5 border border-slate-200/80 shadow-sm space-y-4">
                 <div class="flex flex-col md:flex-row md:items-center justify-between gap-4 border-b border-slate-100 pb-4">
                     <div>
-                        <h2 class="font-display font-bold text-lg text-slate-900">SOP Budidaya Melon Greenhouse Berbasis Fase &amp; Sistem</h2>
+                        <h2 class="font-display font-bold text-base sm:text-lg text-slate-900">SOP Budidaya Melon Greenhouse Berbasis Fase &amp; Sistem</h2>
                         <p class="text-xs sm:text-sm text-slate-500 mt-0.5">Checklist operasional tervalidasi untuk sistem <strong id="sopSystemLabel" class="text-emerald-700">NFT</strong>. Progres checklist otomatis tersimpan di database pengguna.</p>
                     </div>
-                    <div class="flex flex-wrap items-center gap-3">
-                        <button onclick="downloadActivityPDF('sop')" class="px-3.5 py-2 rounded-xl bg-emerald-600 hover:bg-emerald-700 text-white text-xs font-bold transition flex items-center gap-1.5 shadow-sm cursor-pointer">
+                    <div class="flex flex-wrap items-center justify-between sm:justify-end gap-3">
+                        <button onclick="downloadActivityPDF('sop')" class="w-full sm:w-auto justify-center px-3.5 py-2.5 sm:py-2 rounded-xl bg-emerald-600 hover:bg-emerald-700 text-white text-xs font-bold transition flex items-center gap-1.5 shadow-sm cursor-pointer">
                             <i data-lucide="file-down" class="w-3.5 h-3.5"></i>
                             <span>Download PDF SOP Fase</span>
                         </button>
-                        <div class="text-right">
-                            <span class="text-xs text-slate-500 block">Progres Fase Ini</span>
-                            <span id="sopProgressText" class="font-display font-bold text-emerald-700 text-base">0% Selesai</span>
-                        </div>
-                        <div class="w-24 h-2.5 bg-slate-100 rounded-full overflow-hidden">
-                            <div id="sopProgressBar" class="h-full bg-emerald-600 transition-all duration-300" style="width: 0%"></div>
+                        <div class="flex items-center gap-2.5">
+                            <div class="text-left sm:text-right">
+                                <span class="text-xs text-slate-500 block">Progres Fase Ini</span>
+                                <span id="sopProgressText" class="font-display font-bold text-emerald-700 text-sm sm:text-base">0% Selesai</span>
+                            </div>
+                            <div class="w-24 h-2.5 bg-slate-100 rounded-full overflow-hidden">
+                                <div id="sopProgressBar" class="h-full bg-emerald-600 transition-all duration-300" style="width: 0%"></div>
+                            </div>
                         </div>
                     </div>
                 </div>
@@ -629,23 +744,23 @@
                 <div id="sopPhaseDetailCard" class="grid grid-cols-1 lg:grid-cols-12 gap-6 mt-4">
                     <!-- Left: Technical Parameters & System Differences -->
                     <div class="lg:col-span-5 space-y-4">
-                        <div class="bg-emerald-950 text-white rounded-2xl p-5 space-y-3">
+                        <div class="bg-emerald-950 text-white rounded-2xl p-4 sm:p-5 space-y-3">
                             <div class="flex items-center justify-between">
                                 <span id="sopPhaseBadge" class="text-xs font-bold uppercase tracking-wider px-2.5 py-1 rounded-lg bg-emerald-800 text-emerald-200">Fase 3</span>
                                 <span id="sopPhaseDays" class="text-xs font-semibold text-melon-400">8 – 22 HST</span>
                             </div>
-                            <h3 id="sopPhaseTitle" class="font-display font-bold text-xl">Vegetatif &amp; Pewiwilan (Pruning)</h3>
+                            <h3 id="sopPhaseTitle" class="font-display font-bold text-lg sm:text-xl">Vegetatif &amp; Pewiwilan (Pruning)</h3>
                             <p id="sopPhaseSummary" class="text-xs text-emerald-200 leading-relaxed">
                                 Pembentukan batang utama yang kokoh dan daun sehat sebagai pabrik fotosintesis sebelum pembungaan.
                             </p>
                             <div class="grid grid-cols-2 gap-2.5 pt-2">
                                 <div class="bg-emerald-900/80 p-3 rounded-xl border border-emerald-800">
                                     <span class="text-[11px] text-emerald-300 block">Target TDS / EC</span>
-                                    <span id="sopTargetTDS" class="font-bold text-sm text-white">1000–1200 PPM</span>
+                                    <span id="sopTargetTDS" class="font-bold text-xs sm:text-sm text-white">1000–1200 PPM</span>
                                 </div>
                                 <div class="bg-emerald-900/80 p-3 rounded-xl border border-emerald-800">
                                     <span class="text-[11px] text-emerald-300 block">Target pH Air</span>
-                                    <span id="sopTargetPH" class="font-bold text-sm text-white">5.8 – 6.2</span>
+                                    <span id="sopTargetPH" class="font-bold text-xs sm:text-sm text-white">5.8 – 6.2</span>
                                 </div>
                             </div>
                         </div>
@@ -661,10 +776,10 @@
                         </div>
                     </div>
                     <!-- Right: Interactive Action Checklist -->
-                    <div class="lg:col-span-7 bg-slate-50 rounded-2xl p-5 border border-slate-200/80 space-y-3">
-                        <div class="flex items-center justify-between">
+                    <div class="lg:col-span-7 bg-slate-50 rounded-2xl p-4 sm:p-5 border border-slate-200/80 space-y-3">
+                        <div class="flex items-center justify-between gap-2">
                             <h4 class="font-display font-bold text-slate-900 text-sm sm:text-base">Daftar Kerja &amp; SOP Langkah-demi-Langkah</h4>
-                            <button onclick="resetCurrentPhaseChecklist()" class="text-xs text-slate-500 hover:text-emerald-700 font-medium underline">Reset Centang</button>
+                            <button onclick="resetCurrentPhaseChecklist()" class="text-xs text-slate-500 hover:text-emerald-700 font-medium underline shrink-0">Reset Centang</button>
                         </div>
                         <div id="sopChecklistContainer" class="space-y-2.5">
                             <!-- Populated by JS -->
@@ -675,7 +790,7 @@
                 <div class="mt-6 pt-5 border-t border-slate-200 space-y-4">
                     <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-2">
                         <div class="flex items-center gap-2.5">
-                            <div class="p-2 rounded-xl bg-teal-100 text-teal-800">
+                            <div class="p-2 rounded-xl bg-teal-100 text-teal-800 shrink-0">
                                 <i data-lucide="git-branch" class="w-5 h-5"></i>
                             </div>
                             <div>
@@ -683,7 +798,7 @@
                                 <p class="text-xs text-slate-500">Prosedur baku pengoperasian irigasi tetes, kalibrasi emitter/dripper, filtrasi, dan flushing saluran</p>
                             </div>
                         </div>
-                        <button onclick="downloadActivityPDF('drip_sop')" class="px-3.5 py-2 rounded-xl bg-teal-700 hover:bg-teal-800 text-white text-xs font-bold transition flex items-center gap-1.5 cursor-pointer shrink-0">
+                        <button onclick="downloadActivityPDF('drip_sop')" class="w-full sm:w-auto justify-center px-3.5 py-2.5 sm:py-2 rounded-xl bg-teal-700 hover:bg-teal-800 text-white text-xs font-bold transition flex items-center gap-1.5 cursor-pointer shrink-0">
                             <i data-lucide="file-down" class="w-3.5 h-3.5"></i>
                             <span>Download PDF SOP Drip System</span>
                         </button>
@@ -699,14 +814,14 @@
         <!-- ===================================================================== -->
         <section id="tab-calculator" class="tab-section hidden space-y-6">
             <div class="flex justify-end">
-                <button onclick="downloadActivityPDF('calculator')" class="px-3.5 py-2 rounded-xl bg-emerald-600 hover:bg-emerald-700 text-white text-xs font-bold transition flex items-center gap-1.5 shadow-sm cursor-pointer">
+                <button onclick="downloadActivityPDF('calculator')" class="w-full sm:w-auto justify-center px-3.5 py-2.5 sm:py-2 rounded-xl bg-emerald-600 hover:bg-emerald-700 text-white text-xs font-bold transition flex items-center gap-1.5 shadow-sm cursor-pointer">
                     <i data-lucide="file-down" class="w-3.5 h-3.5"></i>
                     <span>Download PDF Peracikan Nutrisi</span>
                 </button>
             </div>
             <div class="grid grid-cols-1 lg:grid-cols-12 gap-6">
                 <!-- Left Calculator Inputs -->
-                <div class="lg:col-span-5 bg-white rounded-2xl p-5 border border-slate-200/80 shadow-sm space-y-4">
+                <div class="lg:col-span-5 bg-white rounded-2xl p-4 sm:p-5 border border-slate-200/80 shadow-sm space-y-4">
                     <div class="border-b border-slate-100 pb-3">
                         <h2 class="font-display font-bold text-lg text-slate-900">Kalkulator Nutrisi AB Mix Melon</h2>
                         <p class="text-xs text-slate-500 mt-0.5">Hitung takaran pekatan A &amp; B (ml) serta koreksi pH berdasarkan volume tandon aktual.</p>
@@ -720,16 +835,16 @@
                         <div class="grid grid-cols-2 gap-3">
                             <div>
                                 <label class="block text-xs font-semibold text-slate-700 mb-1">PPM Air Baku / Awal</label>
-                                <input type="number" id="calc-currentPPM" value="120" min="0" max="2500" oninput="calculateNutrients()" class="w-full px-3 py-2 rounded-xl border border-slate-300 text-sm focus:ring-2 focus:ring-emerald-500 outline-none">
+                                <input type="number" id="calc-currentPPM" value="120" min="0" max="2500" oninput="calculateNutrients()" class="w-full px-3 py-2.5 sm:py-2 rounded-xl border border-slate-300 text-sm focus:ring-2 focus:ring-emerald-500 outline-none">
                             </div>
                             <div>
                                 <label class="block text-xs font-semibold text-slate-700 mb-1">Target PPM Fase Ini</label>
-                                <input type="number" id="calc-targetPPM" value="1150" min="200" max="2200" oninput="calculateNutrients()" class="w-full px-3 py-2 rounded-xl border border-slate-300 text-sm font-semibold text-emerald-700 focus:ring-2 focus:ring-emerald-500 outline-none">
+                                <input type="number" id="calc-targetPPM" value="1150" min="200" max="2200" oninput="calculateNutrients()" class="w-full px-3 py-2.5 sm:py-2 rounded-xl border border-slate-300 text-sm font-semibold text-emerald-700 focus:ring-2 focus:ring-emerald-500 outline-none">
                             </div>
                         </div>
                         <div>
                             <label class="block text-xs font-semibold text-slate-700 mb-1">Kepekatan Stok AB Mix (Konversi 5 ml A + 5 ml B / Liter)</label>
-                            <select id="calc-stockRatio" onchange="calculateNutrients()" class="w-full px-3 py-2 rounded-xl border border-slate-300 text-sm focus:ring-2 focus:ring-emerald-500 outline-none">
+                            <select id="calc-stockRatio" onchange="calculateNutrients()" class="w-full px-3 py-2.5 sm:py-2 rounded-xl border border-slate-300 text-sm focus:ring-2 focus:ring-emerald-500 outline-none">
                                 <option value="200" selected>Standar Pekatan 1000L (5 ml A + 5 ml B = +1000 PPM/L)</option>
                                 <option value="160">Pekatan Formulasi Khusus Melon Generatif (+800 PPM/5ml/L)</option>
                                 <option value="240">Pekatan Tinggi (+1200 PPM/5ml/L)</option>
@@ -741,11 +856,11 @@
                             <div class="grid grid-cols-2 gap-3">
                                 <div>
                                     <label class="block text-xs font-semibold text-slate-700 mb-1">pH Terukur</label>
-                                    <input type="number" id="calc-currentPH" value="7.2" step="0.1" min="3.0" max="10.0" oninput="calculateNutrients()" class="w-full px-3 py-2 rounded-xl border border-slate-300 text-sm focus:ring-2 focus:ring-emerald-500 outline-none">
+                                    <input type="number" id="calc-currentPH" value="7.2" step="0.1" min="3.0" max="10.0" oninput="calculateNutrients()" class="w-full px-3 py-2.5 sm:py-2 rounded-xl border border-slate-300 text-sm focus:ring-2 focus:ring-emerald-500 outline-none">
                                 </div>
                                 <div>
                                     <label class="block text-xs font-semibold text-slate-700 mb-1">Target pH Ideal</label>
-                                    <input type="number" id="calc-targetPH" value="6.0" step="0.1" min="5.0" max="7.0" oninput="calculateNutrients()" class="w-full px-3 py-2 rounded-xl border border-slate-300 text-sm font-semibold text-emerald-700 focus:ring-2 focus:ring-emerald-500 outline-none">
+                                    <input type="number" id="calc-targetPH" value="6.0" step="0.1" min="5.0" max="7.0" oninput="calculateNutrients()" class="w-full px-3 py-2.5 sm:py-2 rounded-xl border border-slate-300 text-sm font-semibold text-emerald-700 focus:ring-2 focus:ring-emerald-500 outline-none">
                                 </div>
                             </div>
                         </div>
@@ -754,8 +869,8 @@
                 <!-- Right Results & Agronomic Schedule Table -->
                 <div class="lg:col-span-7 space-y-5">
                     <!-- Calculation Output Cards -->
-                    <div class="bg-gradient-to-br from-emerald-900 via-emerald-900 to-emerald-950 text-white rounded-2xl p-6 shadow-md space-y-5">
-                        <div class="flex items-center justify-between">
+                    <div class="bg-gradient-to-br from-emerald-900 via-emerald-900 to-emerald-950 text-white rounded-2xl p-5 sm:p-6 shadow-md space-y-5">
+                        <div class="flex flex-wrap items-center justify-between gap-2">
                             <div>
                                 <span class="text-xs uppercase tracking-wider text-emerald-300 font-semibold">Hasil Dosis Peracikan</span>
                                 <h3 class="font-display font-bold text-xl mt-0.5">Takaran Stok A &amp; Stok B</h3>
@@ -794,10 +909,10 @@
                         </div>
                     </div>
                     <!-- Standard Melon PPM & EC Progression Reference Table -->
-                    <div class="bg-white rounded-2xl p-5 border border-slate-200/80 shadow-sm">
+                    <div class="bg-white rounded-2xl p-4 sm:p-5 border border-slate-200/80 shadow-sm">
                         <h4 class="font-display font-bold text-slate-900 text-sm mb-3">Tabel Standar Kepekatan Nutrisi Melon Berdasarkan Umur (HST)</h4>
                         <div class="overflow-x-auto">
-                            <table class="w-full text-left text-xs">
+                            <table class="w-full min-w-[520px] text-left text-xs">
                                 <thead>
                                     <tr class="bg-slate-50 text-slate-600 border-b border-slate-200">
                                         <th class="py-2 px-3 font-bold">Fase Pertumbuhan</th>
@@ -863,7 +978,7 @@
         <!-- ===================================================================== -->
         <section id="tab-logbook" class="tab-section hidden space-y-6">
             <div class="flex justify-end">
-                <button onclick="downloadActivityPDF('logbook')" class="px-3.5 py-2 rounded-xl bg-emerald-600 hover:bg-emerald-700 text-white text-xs font-bold transition flex items-center gap-1.5 shadow-sm cursor-pointer">
+                <button onclick="downloadActivityPDF('logbook')" class="w-full sm:w-auto justify-center px-3.5 py-2.5 sm:py-2 rounded-xl bg-emerald-600 hover:bg-emerald-700 text-white text-xs font-bold transition flex items-center gap-1.5 shadow-sm cursor-pointer">
                     <i data-lucide="file-down" class="w-3.5 h-3.5"></i>
                     <span>Download PDF Logbook &amp; Panen</span>
                 </button>
@@ -871,7 +986,7 @@
             <div class="grid grid-cols-1 lg:grid-cols-12 gap-6">
                 <!-- Left: Harvest & Batch Estimator -->
                 <div class="lg:col-span-5 space-y-5">
-                    <div class="bg-white rounded-2xl p-5 border border-slate-200/80 shadow-sm space-y-4">
+                    <div class="bg-white rounded-2xl p-4 sm:p-5 border border-slate-200/80 shadow-sm space-y-4">
                         <div class="border-b border-slate-100 pb-3">
                             <h2 class="font-display font-bold text-lg text-slate-900">Kalkulator Jadwal &amp; Estimasi Panen</h2>
                             <p class="text-xs text-slate-500">Hitung otomatis tanggal polinasi dan estimasi panen berdasarkan tanggal pindah tanam.</p>
@@ -879,16 +994,16 @@
                         <div class="space-y-3">
                             <div>
                                 <label class="block text-xs font-semibold text-slate-700 mb-1">Nama Blok / Batch Greenhouse</label>
-                                <input type="text" id="batch-name" value="GH-01 Blok Timur (400 Populasi)" class="w-full px-3 py-2 rounded-xl border border-slate-300 text-sm focus:ring-2 focus:ring-emerald-500 outline-none">
+                                <input type="text" id="batch-name" value="GH-01 Blok Timur (400 Populasi)" class="w-full px-3 py-2.5 sm:py-2 rounded-xl border border-slate-300 text-sm focus:ring-2 focus:ring-emerald-500 outline-none">
                             </div>
-                            <div class="grid grid-cols-2 gap-3">
+                            <div class="grid grid-cols-1 sm:grid-cols-2 gap-3">
                                 <div>
                                     <label class="block text-xs font-semibold text-slate-700 mb-1">Tanggal Pindah Tanam</label>
-                                    <input type="date" id="batch-transplantDate" onchange="updateHarvestTimeline()" class="w-full px-3 py-2 rounded-xl border border-slate-300 text-sm focus:ring-2 focus:ring-emerald-500 outline-none">
+                                    <input type="date" id="batch-transplantDate" onchange="updateHarvestTimeline()" class="w-full px-3 py-2.5 sm:py-2 rounded-xl border border-slate-300 text-sm focus:ring-2 focus:ring-emerald-500 outline-none">
                                 </div>
                                 <div>
                                     <label class="block text-xs font-semibold text-slate-700 mb-1">Tanggal Polinasi Aktual</label>
-                                    <input type="date" id="batch-pollinationDate" onchange="updateHarvestTimeline()" class="w-full px-3 py-2 rounded-xl border border-slate-300 text-sm focus:ring-2 focus:ring-emerald-500 outline-none">
+                                    <input type="date" id="batch-pollinationDate" onchange="updateHarvestTimeline()" class="w-full px-3 py-2.5 sm:py-2 rounded-xl border border-slate-300 text-sm focus:ring-2 focus:ring-emerald-500 outline-none">
                                 </div>
                             </div>
                         </div>
@@ -898,17 +1013,17 @@
                         </div>
                     </div>
                     <!-- Add Maintenance Activity Log -->
-                    <div class="bg-white rounded-2xl p-5 border border-slate-200/80 shadow-sm space-y-3">
+                    <div class="bg-white rounded-2xl p-4 sm:p-5 border border-slate-200/80 shadow-sm space-y-3">
                         <h3 class="font-display font-bold text-slate-900 text-base">Catat Aktivitas Pemeliharaan</h3>
                         <form onsubmit="addMaintenanceLog(event)" class="space-y-3">
-                            <div class="grid grid-cols-2 gap-2.5">
+                            <div class="grid grid-cols-1 sm:grid-cols-2 gap-2.5">
                                 <div>
                                     <label class="block text-xs font-semibold text-slate-700 mb-1">Tanggal</label>
-                                    <input type="date" id="log-date" required class="w-full px-3 py-2 rounded-xl border border-slate-300 text-xs focus:ring-2 focus:ring-emerald-500 outline-none">
+                                    <input type="date" id="log-date" required class="w-full px-3 py-2.5 sm:py-2 rounded-xl border border-slate-300 text-xs focus:ring-2 focus:ring-emerald-500 outline-none">
                                 </div>
                                 <div>
                                     <label class="block text-xs font-semibold text-slate-700 mb-1">Kategori</label>
-                                    <select id="log-category" class="w-full px-3 py-2 rounded-xl border border-slate-300 text-xs focus:ring-2 focus:ring-emerald-500 outline-none">
+                                    <select id="log-category" class="w-full px-3 py-2.5 sm:py-2 rounded-xl border border-slate-300 text-xs focus:ring-2 focus:ring-emerald-500 outline-none">
                                         <option value="Kuras Tandon">Kuras &amp; Sanitasi Tandon</option>
                                         <option value="Pewiwilan & Topping">Pewiwilan &amp; Topping</option>
                                         <option value="Polinasi">Polinasi Bunga Betina</option>
@@ -919,9 +1034,9 @@
                             </div>
                             <div>
                                 <label class="block text-xs font-semibold text-slate-700 mb-1">Detail Tindakan &amp; Dosis</label>
-                                <input type="text" id="log-note" placeholder="Contoh: Kuras total tandon 500L, sanitasi H2O2 3% 50ml..." required class="w-full px-3 py-2 rounded-xl border border-slate-300 text-xs focus:ring-2 focus:ring-emerald-500 outline-none">
+                                <input type="text" id="log-note" placeholder="Contoh: Kuras total tandon 500L, sanitasi H2O2 3% 50ml..." required class="w-full px-3 py-2.5 sm:py-2 rounded-xl border border-slate-300 text-xs focus:ring-2 focus:ring-emerald-500 outline-none">
                             </div>
-                            <button type="submit" class="w-full py-2.5 rounded-xl bg-emerald-600 hover:bg-emerald-700 text-white font-semibold text-xs transition flex items-center justify-center gap-1.5">
+                            <button type="submit" class="w-full py-3 sm:py-2.5 rounded-xl bg-emerald-600 hover:bg-emerald-700 text-white font-semibold text-xs transition flex items-center justify-center gap-1.5">
                                 <i data-lucide="plus-circle" class="w-4 h-4"></i>
                                 <span>Tambah ke Logbook Kebun</span>
                             </button>
@@ -929,13 +1044,13 @@
                     </div>
                 </div>
                 <!-- Right: Maintenance Schedule & Log History -->
-                <div class="lg:col-span-7 bg-white rounded-2xl p-5 border border-slate-200/80 shadow-sm space-y-4">
+                <div class="lg:col-span-7 bg-white rounded-2xl p-4 sm:p-5 border border-slate-200/80 shadow-sm space-y-4">
                     <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-2 border-b border-slate-100 pb-3">
                         <div>
                             <h3 class="font-display font-bold text-slate-900 text-lg">Logbook Riwayat &amp; Jadwal Rutin</h3>
                             <p class="text-xs text-slate-500">Rekam jejak perawatan untuk ketertelusuran (traceability) mutu buah</p>
                         </div>
-                        <span id="systemMaintenanceIntervalBadge" class="text-xs font-semibold px-3 py-1 rounded-full bg-emerald-100 text-emerald-800">Rekomendasi Kuras NFT: Setiap 14 Hari</span>
+                        <span id="systemMaintenanceIntervalBadge" class="text-xs font-semibold px-3 py-1 rounded-full bg-emerald-100 text-emerald-800 self-start sm:self-auto">Rekomendasi Kuras NFT: Setiap 14 Hari</span>
                     </div>
                     <!-- System Specific Maintenance Protocol -->
                     <div class="grid grid-cols-1 sm:grid-cols-3 gap-3 text-xs">
@@ -963,7 +1078,7 @@
         <!-- TAB 5: DIAGNOSTIK HAMA, PENYAKIT & GANGGUAN FISIOLOGIS MELON          -->
         <!-- ===================================================================== -->
         <section id="tab-diagnostics" class="tab-section hidden space-y-6">
-            <div class="bg-white rounded-2xl p-5 border border-slate-200/80 shadow-sm space-y-4">
+            <div class="bg-white rounded-2xl p-4 sm:p-5 border border-slate-200/80 shadow-sm space-y-4">
                 <div class="flex flex-col md:flex-row md:items-center justify-between gap-4 border-b border-slate-100 pb-4">
                     <div>
                         <h2 class="font-display font-bold text-lg text-slate-900">Diagnostik Penyakit, Hama &amp; Gangguan Fisiologis Melon</h2>
@@ -971,11 +1086,11 @@
                     </div>
                     <!-- Filter Category & PDF Download -->
                     <div class="flex flex-wrap items-center gap-1.5">
-                        <button onclick="filterDiagnostics('ALL', event)" class="diag-filter-btn px-3 py-1.5 rounded-xl text-xs font-semibold bg-emerald-600 text-white">Semua (6)</button>
-                        <button onclick="filterDiagnostics('JAMUR', event)" class="diag-filter-btn px-3 py-1.5 rounded-xl text-xs font-semibold bg-slate-100 text-slate-700 hover:bg-slate-200">Jamur &amp; Akar</button>
-                        <button onclick="filterDiagnostics('HAMA', event)" class="diag-filter-btn px-3 py-1.5 rounded-xl text-xs font-semibold bg-slate-100 text-slate-700 hover:bg-slate-200">Hama &amp; Virus</button>
-                        <button onclick="filterDiagnostics('FISIOLOGIS', event)" class="diag-filter-btn px-3 py-1.5 rounded-xl text-xs font-semibold bg-slate-100 text-slate-700 hover:bg-slate-200">Fisiologis &amp; Nutrisi</button>
-                        <button onclick="downloadActivityPDF('diagnostics')" class="px-3 py-1.5 rounded-xl bg-emerald-900 hover:bg-emerald-950 text-white text-xs font-bold transition flex items-center gap-1 cursor-pointer">
+                        <button onclick="filterDiagnostics('ALL', event)" class="diag-filter-btn px-3 py-2 sm:py-1.5 rounded-xl text-xs font-semibold bg-emerald-600 text-white">Semua (6)</button>
+                        <button onclick="filterDiagnostics('JAMUR', event)" class="diag-filter-btn px-3 py-2 sm:py-1.5 rounded-xl text-xs font-semibold bg-slate-100 text-slate-700 hover:bg-slate-200">Jamur &amp; Akar</button>
+                        <button onclick="filterDiagnostics('HAMA', event)" class="diag-filter-btn px-3 py-2 sm:py-1.5 rounded-xl text-xs font-semibold bg-slate-100 text-slate-700 hover:bg-slate-200">Hama &amp; Virus</button>
+                        <button onclick="filterDiagnostics('FISIOLOGIS', event)" class="diag-filter-btn px-3 py-2 sm:py-1.5 rounded-xl text-xs font-semibold bg-slate-100 text-slate-700 hover:bg-slate-200">Fisiologis &amp; Nutrisi</button>
+                        <button onclick="downloadActivityPDF('diagnostics')" class="px-3 py-2 sm:py-1.5 rounded-xl bg-emerald-900 hover:bg-emerald-950 text-white text-xs font-bold transition flex items-center gap-1 cursor-pointer">
                             <i data-lucide="file-down" class="w-3.5 h-3.5 text-melon-400"></i>
                             <span>PDF Diagnostik</span>
                         </button>
@@ -992,7 +1107,7 @@
         <!-- ===================================================================== -->
         <section id="tab-finance" class="tab-section hidden space-y-6">
             <div class="flex justify-end">
-                <button onclick="downloadActivityPDF('finance')" class="px-3.5 py-2 rounded-xl bg-emerald-600 hover:bg-emerald-700 text-white text-xs font-bold transition flex items-center gap-1.5 shadow-sm cursor-pointer">
+                <button onclick="downloadActivityPDF('finance')" class="w-full sm:w-auto justify-center px-3.5 py-2.5 sm:py-2 rounded-xl bg-emerald-600 hover:bg-emerald-700 text-white text-xs font-bold transition flex items-center gap-1.5 shadow-sm cursor-pointer">
                     <i data-lucide="file-down" class="w-3.5 h-3.5"></i>
                     <span>Download PDF Inventaris &amp; Usaha Tani</span>
                 </button>
@@ -1022,7 +1137,7 @@
             </div>
             <div class="grid grid-cols-1 lg:grid-cols-12 gap-6">
                 <!-- Left: Harvest Yield & Revenue Simulator -->
-                <div class="lg:col-span-6 bg-white rounded-2xl p-5 border border-slate-200/80 shadow-sm space-y-4">
+                <div class="lg:col-span-6 bg-white rounded-2xl p-4 sm:p-5 border border-slate-200/80 shadow-sm space-y-4">
                     <div class="border-b border-slate-100 pb-3">
                         <h3 class="font-display font-bold text-slate-900 text-base">Simulasi Proyeksi Panen &amp; Grading Buah</h3>
                         <p class="text-xs text-slate-500">Sesuaikan populasi tanaman, bobot rata-rata buah, dan harga jual tiap grade.</p>
@@ -1030,45 +1145,45 @@
                     <div class="grid grid-cols-2 sm:grid-cols-3 gap-3">
                         <div>
                             <label class="block text-xs font-semibold text-slate-700 mb-1">Populasi Tanaman</label>
-                            <input type="number" id="fin-population" value="400" min="50" max="10000" oninput="calculateFinance()" class="w-full px-3 py-2 rounded-xl border border-slate-300 text-sm font-semibold">
+                            <input type="number" id="fin-population" value="400" min="50" max="10000" oninput="calculateFinance()" class="w-full px-3 py-2.5 sm:py-2 rounded-xl border border-slate-300 text-sm font-semibold">
                         </div>
                         <div>
                             <label class="block text-xs font-semibold text-slate-700 mb-1">Bobot Rata-rata (kg)</label>
-                            <input type="number" id="fin-avgWeight" value="1.7" step="0.1" min="0.8" max="3.5" oninput="calculateFinance()" class="w-full px-3 py-2 rounded-xl border border-slate-300 text-sm font-semibold">
+                            <input type="number" id="fin-avgWeight" value="1.7" step="0.1" min="0.8" max="3.5" oninput="calculateFinance()" class="w-full px-3 py-2.5 sm:py-2 rounded-xl border border-slate-300 text-sm font-semibold">
                         </div>
                         <div class="col-span-2 sm:col-span-1">
                             <label class="block text-xs font-semibold text-slate-700 mb-1">Biaya Operasional (Rp)</label>
-                            <input type="number" id="fin-opCost" value="14500000" step="100000" oninput="calculateFinance()" class="w-full px-3 py-2 rounded-xl border border-slate-300 text-sm font-semibold">
+                            <input type="number" id="fin-opCost" value="14500000" step="100000" oninput="calculateFinance()" class="w-full px-3 py-2.5 sm:py-2 rounded-xl border border-slate-300 text-sm font-semibold">
                         </div>
                     </div>
                     <div class="space-y-2.5 pt-2">
-                        <div class="grid grid-cols-3 gap-2 text-xs font-bold text-slate-500 px-1">
+                        <div class="grid grid-cols-3 gap-2 text-[11px] sm:text-xs font-bold text-slate-500 px-1">
                             <span>Kategori Grade</span>
-                            <span>Persentase Panen (%)</span>
-                            <span>Harga Jual / kg (Rp)</span>
+                            <span>Persentase (%)</span>
+                            <span>Harga / kg (Rp)</span>
                         </div>
                         <!-- Grade A -->
                         <div class="grid grid-cols-3 gap-2 items-center bg-emerald-50/70 p-2.5 rounded-xl border border-emerald-100">
-                            <span class="text-xs font-bold text-emerald-900">Grade A (&gt;1.5kg, Net Full)</span>
-                            <input type="number" id="fin-pctA" value="75" min="0" max="100" oninput="calculateFinance()" class="px-2.5 py-1.5 rounded-lg border border-slate-300 text-xs font-semibold bg-white">
-                            <input type="number" id="fin-priceA" value="45000" step="1000" oninput="calculateFinance()" class="px-2.5 py-1.5 rounded-lg border border-slate-300 text-xs font-semibold bg-white">
+                            <span class="text-[11px] sm:text-xs font-bold text-emerald-900">Grade A (&gt;1.5kg)</span>
+                            <input type="number" id="fin-pctA" value="75" min="0" max="100" oninput="calculateFinance()" class="w-full px-2.5 py-2 sm:py-1.5 rounded-lg border border-slate-300 text-xs font-semibold bg-white">
+                            <input type="number" id="fin-priceA" value="45000" step="1000" oninput="calculateFinance()" class="w-full px-2.5 py-2 sm:py-1.5 rounded-lg border border-slate-300 text-xs font-semibold bg-white">
                         </div>
                         <!-- Grade B -->
                         <div class="grid grid-cols-3 gap-2 items-center bg-amber-50/60 p-2.5 rounded-xl border border-amber-100">
-                            <span class="text-xs font-bold text-amber-900">Grade B (1.2–1.5kg)</span>
-                            <input type="number" id="fin-pctB" value="20" min="0" max="100" oninput="calculateFinance()" class="px-2.5 py-1.5 rounded-lg border border-slate-300 text-xs font-semibold bg-white">
-                            <input type="number" id="fin-priceB" value="30000" step="1000" oninput="calculateFinance()" class="px-2.5 py-1.5 rounded-lg border border-slate-300 text-xs font-semibold bg-white">
+                            <span class="text-[11px] sm:text-xs font-bold text-amber-900">Grade B (1.2–1.5kg)</span>
+                            <input type="number" id="fin-pctB" value="20" min="0" max="100" oninput="calculateFinance()" class="w-full px-2.5 py-2 sm:py-1.5 rounded-lg border border-slate-300 text-xs font-semibold bg-white">
+                            <input type="number" id="fin-priceB" value="30000" step="1000" oninput="calculateFinance()" class="w-full px-2.5 py-2 sm:py-1.5 rounded-lg border border-slate-300 text-xs font-semibold bg-white">
                         </div>
                         <!-- Grade C -->
                         <div class="grid grid-cols-3 gap-2 items-center bg-slate-50 p-2.5 rounded-xl border border-slate-200">
-                            <span class="text-xs font-bold text-slate-700">Grade C (&lt;1.2kg / Off-grade)</span>
-                            <input type="number" id="fin-pctC" value="5" min="0" max="100" oninput="calculateFinance()" class="px-2.5 py-1.5 rounded-lg border border-slate-300 text-xs font-semibold bg-white">
-                            <input type="number" id="fin-priceC" value="15000" step="1000" oninput="calculateFinance()" class="px-2.5 py-1.5 rounded-lg border border-slate-300 text-xs font-semibold bg-white">
+                            <span class="text-[11px] sm:text-xs font-bold text-slate-700">Grade C (&lt;1.2kg)</span>
+                            <input type="number" id="fin-pctC" value="5" min="0" max="100" oninput="calculateFinance()" class="w-full px-2.5 py-2 sm:py-1.5 rounded-lg border border-slate-300 text-xs font-semibold bg-white">
+                            <input type="number" id="fin-priceC" value="15000" step="1000" oninput="calculateFinance()" class="w-full px-2.5 py-2 sm:py-1.5 rounded-lg border border-slate-300 text-xs font-semibold bg-white">
                         </div>
                     </div>
                 </div>
                 <!-- Right: Inventory Stock Control -->
-                <div class="lg:col-span-6 bg-white rounded-2xl p-5 border border-slate-200/80 shadow-sm space-y-4">
+                <div class="lg:col-span-6 bg-white rounded-2xl p-4 sm:p-5 border border-slate-200/80 shadow-sm space-y-4">
                     <div class="flex items-center justify-between border-b border-slate-100 pb-3">
                         <div>
                             <h3 class="font-display font-bold text-slate-900 text-base">Kontrol Stok Logistik &amp; Sarana Produksi</h3>
@@ -1076,7 +1191,7 @@
                         </div>
                     </div>
                     <div class="overflow-x-auto">
-                        <table class="w-full text-left text-xs">
+                        <table class="w-full min-w-[460px] text-left text-xs">
                             <thead>
                                 <tr class="bg-slate-50 text-slate-600 border-b border-slate-200">
                                     <th class="py-2 px-3 font-bold">Item Saprotan</th>
@@ -1097,16 +1212,16 @@
         <!-- TAB 7: REFERENSI PUSTAKA & JURNAL ILMIAH AGRONOMI VALID               -->
         <!-- ===================================================================== -->
         <section id="tab-references" class="tab-section hidden space-y-6">
-            <div class="bg-white rounded-2xl p-6 border border-slate-200/80 shadow-sm space-y-6">
+            <div class="bg-white rounded-2xl p-4 sm:p-6 border border-slate-200/80 shadow-sm space-y-6">
                 <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-3 border-b border-slate-100 pb-4">
                     <div>
                         <span class="text-xs font-bold uppercase tracking-wider text-emerald-700 bg-emerald-50 px-3 py-1 rounded-full border border-emerald-200">Jurnal Indonesia (Open Access) &amp; Buku Panduan</span>
-                        <h2 class="font-display font-bold text-xl text-slate-900 mt-2">Landasan Agronomi, Jurnal Indonesia &amp; Buku Akses Terbuka Budidaya Melon Hidroponik</h2>
+                        <h2 class="font-display font-bold text-lg sm:text-xl text-slate-900 mt-2">Landasan Agronomi, Jurnal Indonesia &amp; Buku Akses Terbuka Budidaya Melon Hidroponik</h2>
                         <p class="text-xs sm:text-sm text-slate-600 mt-1 leading-relaxed">
                             Seluruh ambang batas parameter (EC/PPM, pH, VPD, suhu zona perakaran, serta protokol pemangkasan dan nutrisi kalsium-kalium) dalam aplikasi ini merujuk pada jurnal penelitian hortikultura dan agronomi terakreditasi di Indonesia (SINTA / GARUDA) serta buku teks dan petunjuk teknis Kementerian Pertanian RI yang dapat dibuka dan dibaca langsung oleh pengguna.
                         </p>
                     </div>
-                    <button onclick="downloadActivityPDF('references')" class="px-3.5 py-2 rounded-xl bg-emerald-600 hover:bg-emerald-700 text-white text-xs font-bold transition flex items-center gap-1.5 shadow-sm cursor-pointer shrink-0">
+                    <button onclick="downloadActivityPDF('references')" class="w-full sm:w-auto justify-center px-3.5 py-2.5 sm:py-2 rounded-xl bg-emerald-600 hover:bg-emerald-700 text-white text-xs font-bold transition flex items-center gap-1.5 shadow-sm cursor-pointer shrink-0">
                         <i data-lucide="file-down" class="w-3.5 h-3.5"></i>
                         <span>Download PDF Pustaka</span>
                     </button>
@@ -1119,8 +1234,8 @@
     </main>
     <!-- Footer -->
     <footer class="bg-white border-t border-slate-200 mt-12 py-6">
-        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 flex flex-col sm:flex-row items-center justify-between gap-4 text-xs text-slate-500">
-            <div class="flex items-center gap-2">
+        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 flex flex-col sm:flex-row items-center justify-between gap-4 text-xs text-slate-500 text-center sm:text-left">
+            <div class="flex flex-wrap items-center justify-center sm:justify-start gap-2">
                 <span class="font-display font-bold text-slate-800">GreenHouse Bejo GH</span>
                 <span>•</span>
                 <span>Sistem Manajemen Budidaya Melon Greenhouse (NFT, DFT, Rakit Apung &amp; Drip System)</span>
@@ -1143,8 +1258,8 @@
                 Tindakan ini akan mengembalikan seluruh log monitoring sensor, centang checklist SOP, catatan logbook, dan stok inventaris untuk pengguna aktif ke data simulasi awal.
             </p>
             <div class="flex items-center justify-end gap-2.5 pt-2">
-                <button onclick="closeResetModal()" class="px-4 py-2 rounded-xl bg-slate-100 hover:bg-slate-200 text-slate-700 text-xs font-semibold transition">Batal</button>
-                <button onclick="confirmResetData()" class="px-4 py-2 rounded-xl bg-rose-600 hover:bg-rose-700 text-white text-xs font-semibold transition">Ya, Reset Semua Data</button>
+                <button onclick="closeResetModal()" class="px-4 py-2.5 sm:py-2 rounded-xl bg-slate-100 hover:bg-slate-200 text-slate-700 text-xs font-semibold transition">Batal</button>
+                <button onclick="confirmResetData()" class="px-4 py-2.5 sm:py-2 rounded-xl bg-rose-600 hover:bg-rose-700 text-white text-xs font-semibold transition">Ya, Reset Semua Data</button>
             </div>
         </div>
     </div>
@@ -1152,6 +1267,56 @@
     <!-- JAVASCRIPT APPLICATION LOGIC & AGRONOMIC KNOWLEDGE BASE               -->
     <!-- ===================================================================== -->
     <script>
+        // -------------------------------------------------------------------------
+        // 0. MOBILE SIDEBAR & RESPONSIVE CONFIG CONTROLS (UI ONLY)
+        // -------------------------------------------------------------------------
+        function openMobileSidebar() {
+            const drawer = document.getElementById("mobileSidebarDrawer");
+            const backdrop = document.getElementById("mobileSidebarBackdrop");
+            if (drawer) {
+                drawer.classList.remove("sidebar-closed");
+                drawer.classList.add("sidebar-open");
+            }
+            if (backdrop) {
+                backdrop.classList.remove("hidden");
+            }
+            document.body.style.overflow = "hidden";
+        }
+        function closeMobileSidebar() {
+            const drawer = document.getElementById("mobileSidebarDrawer");
+            const backdrop = document.getElementById("mobileSidebarBackdrop");
+            if (drawer) {
+                drawer.classList.remove("sidebar-open");
+                drawer.classList.add("sidebar-closed");
+            }
+            if (backdrop) {
+                backdrop.classList.add("hidden");
+            }
+            document.body.style.overflow = "";
+        }
+        function toggleMobileConfigPanel() {
+            const panel = document.getElementById("globalConfigWrapper");
+            if (!panel) return;
+            if (panel.classList.contains("hidden")) {
+                panel.classList.remove("hidden");
+                panel.classList.add("flex");
+            } else {
+                panel.classList.add("hidden");
+                panel.classList.remove("flex");
+            }
+        }
+        function syncMobileHeaderIndicators(tabId) {
+            const desktopBtn = document.getElementById(`nav-${tabId}`);
+            const mobileLabel = document.getElementById("mobileActiveTabLabel");
+            if (desktopBtn && mobileLabel) {
+                mobileLabel.textContent = desktopBtn.textContent.trim();
+            }
+            const badge = document.getElementById("mobileQuickSystemBadge");
+            if (badge && typeof appState !== "undefined") {
+                badge.textContent = `${appState.system} • Fase ${appState.phase + 1}`;
+            }
+        }
+
         // -------------------------------------------------------------------------
         // 1. DATABASE PENGETAHUAN AGRONOMI, SOP, DIAGNOSTIK & REFERENSI ILMIAH
         // -------------------------------------------------------------------------
@@ -1256,7 +1421,7 @@
                 id: 2,
                 shortName: "3. Vegetatif",
                 days: "8 – 22 HST",
-                title: "Pertumbuhan Vegetatif, Pelilitan & Pewiwilan",
+                title: "Pertumbuhan Vegetatif, Pewiwilan & Pelilitan",
                 summary: "Memacu luas daun sehat sebagai sumber asimilat (source) dan membuang tunas lateral yang tidak produktif.",
                 tds: "1000 – 1200 PPM (EC 2.0–2.4)",
                 ppmMin: 1000,
@@ -1708,6 +1873,12 @@
                 activeBtn.classList.add("tab-active");
                 activeBtn.classList.remove("text-emerald-200", "hover:bg-emerald-900/90");
             }
+            const activeMobileBtn = document.getElementById(`m-nav-${tabId}`);
+            if (activeMobileBtn) {
+                activeMobileBtn.classList.add("tab-active");
+                activeMobileBtn.classList.remove("text-emerald-200", "hover:bg-emerald-900/90");
+            }
+            syncMobileHeaderIndicators(tabId);
         }
         // -------------------------------------------------------------------------
         // 4. GLOBAL SYSTEM / CULTIVAR / PHASE SYNCHRONIZATION
@@ -1726,6 +1897,10 @@
             renderDashboard();
             renderSOP();
             calculateNutrients();
+            const activeSection = document.querySelector(".tab-section:not(.hidden)");
+            if (activeSection) {
+                syncMobileHeaderIndicators(activeSection.id.replace("tab-", ""));
+            }
             showToast(`Konfigurasi diperbarui (${currentUser}): ${appState.system} | ${appState.cultivar} | ${phaseObj.shortName}`);
         }
         function updateGlobalBanner() {
@@ -2128,15 +2303,15 @@
                     <span class="font-bold text-emerald-900">Umur Tanaman Saat Ini:</span>
                     <span class="px-2.5 py-0.5 rounded-full bg-emerald-700 text-white font-bold">${hstNow >= 0 ? hstNow + ' HST' : 'Belum Tanam'}</span>
                 </div>
-                <div class="flex justify-between">
+                <div class="flex flex-wrap justify-between gap-1">
                     <span class="text-slate-600">Jendela Polinasi Ideal (Ruas 8–11):</span>
                     <span class="font-semibold text-slate-900">${estPollinationStart} – ${estPollinationEnd}</span>
                 </div>
-                <div class="flex justify-between">
+                <div class="flex flex-wrap justify-between gap-1">
                     <span class="text-slate-600">Fase Pembentukan Net &amp; Gantung Buah:</span>
                     <span class="font-semibold text-slate-900">${estNetting}</span>
                 </div>
-                <div class="flex justify-between pt-1 border-t border-emerald-200">
+                <div class="flex flex-wrap justify-between gap-1 pt-1 border-t border-emerald-200">
                     <span class="font-bold text-amber-800">Estimasi Waktu Panen Raya:</span>
                     <span class="font-extrabold text-amber-800">${estHarvest}</span>
                 </div>
@@ -2159,13 +2334,13 @@
             list.innerHTML = appState.maintenanceLogs.map((item, idx) => `
                 <div class="p-3.5 rounded-xl bg-slate-50 border border-slate-200/80 flex items-start justify-between gap-3">
                     <div class="space-y-1">
-                        <div class="flex items-center gap-2">
+                        <div class="flex flex-wrap items-center gap-2">
                             <span class="text-[11px] font-bold px-2 py-0.5 rounded-md bg-emerald-100 text-emerald-800">${item.category}</span>
                             <span class="text-xs text-slate-400 font-medium">${item.date}</span>
                         </div>
                         <p class="text-xs sm:text-sm text-slate-700 leading-relaxed">${item.note}</p>
                     </div>
-                    <button onclick="deleteMaintenanceLog(${idx})" class="text-slate-400 hover:text-rose-600 p-1" title="Hapus Log">
+                    <button onclick="deleteMaintenanceLog(${idx})" class="text-slate-400 hover:text-rose-600 p-1.5 shrink-0" title="Hapus Log">
                         <i data-lucide="trash-2" class="w-4 h-4"></i>
                     </button>
                 </div>
@@ -2189,11 +2364,11 @@
                 ? DIAGNOSTICS_DATA
                 : DIAGNOSTICS_DATA.filter(d => d.category === filterCat);
             grid.innerHTML = filtered.map(item => `
-                <div class="rounded-2xl border border-slate-200 bg-slate-50/50 p-5 flex flex-col justify-between space-y-3 hover:shadow-md transition">
+                <div class="rounded-2xl border border-slate-200 bg-slate-50/50 p-4 sm:p-5 flex flex-col justify-between space-y-3 hover:shadow-md transition">
                     <div class="space-y-2.5">
-                        <div class="flex items-center justify-between">
+                        <div class="flex items-center justify-between gap-2">
                             <span class="text-[11px] font-bold px-2.5 py-0.5 rounded-full ${item.badgeColor}">${item.category}</span>
-                            <span class="text-[11px] italic text-slate-400 truncate max-w-[170px]">${item.pathogen}</span>
+                            <span class="text-[11px] italic text-slate-400 truncate max-w-[160px]">${item.pathogen}</span>
                         </div>
                         <h3 class="font-display font-bold text-slate-900 text-base">${item.title}</h3>
                         <div class="text-xs space-y-2 text-slate-600 leading-relaxed">
@@ -2210,10 +2385,10 @@
         }
         function filterDiagnostics(category, ev) {
             document.querySelectorAll(".diag-filter-btn").forEach(btn => {
-                btn.className = "diag-filter-btn px-3 py-1.5 rounded-xl text-xs font-semibold bg-slate-100 text-slate-700 hover:bg-slate-200";
+                btn.className = "diag-filter-btn px-3 py-2 sm:py-1.5 rounded-xl text-xs font-semibold bg-slate-100 text-slate-700 hover:bg-slate-200";
             });
             if (ev && ev.target) {
-                ev.target.className = "diag-filter-btn px-3 py-1.5 rounded-xl text-xs font-semibold bg-emerald-600 text-white";
+                ev.target.className = "diag-filter-btn px-3 py-2 sm:py-1.5 rounded-xl text-xs font-semibold bg-emerald-600 text-white";
             }
             renderDiagnostics(category);
         }
@@ -2260,8 +2435,8 @@
                             </span>
                         </td>
                         <td class="py-2.5 px-3 text-right space-x-1">
-                            <button onclick="adjustStock(${idx}, -1)" class="px-2 py-1 rounded bg-slate-100 hover:bg-slate-200 font-bold text-slate-700">-</button>
-                            <button onclick="adjustStock(${idx}, 1)" class="px-2 py-1 rounded bg-emerald-100 hover:bg-emerald-200 font-bold text-emerald-800">+</button>
+                            <button onclick="adjustStock(${idx}, -1)" class="px-2.5 py-1.5 sm:px-2 sm:py-1 rounded bg-slate-100 hover:bg-slate-200 font-bold text-slate-700">-</button>
+                            <button onclick="adjustStock(${idx}, 1)" class="px-2.5 py-1.5 sm:px-2 sm:py-1 rounded bg-emerald-100 hover:bg-emerald-200 font-bold text-emerald-800">+</button>
                         </td>
                     </tr>
                 `;
@@ -2278,7 +2453,7 @@
         function renderReferences() {
             const grid = document.getElementById("referencesGrid");
             grid.innerHTML = SCIENTIFIC_REFERENCES.map(ref => `
-                <div class="p-5 rounded-2xl bg-slate-50 border border-slate-200/90 flex flex-col justify-between space-y-3 hover:border-emerald-300 transition">
+                <div class="p-4 sm:p-5 rounded-2xl bg-slate-50 border border-slate-200/90 flex flex-col justify-between space-y-3 hover:border-emerald-300 transition">
                     <div class="space-y-2">
                         <div class="flex items-center justify-between gap-2">
                             <span class="text-[11px] font-bold px-2.5 py-0.5 rounded-md bg-emerald-100 text-emerald-900">${ref.type}</span>
@@ -2290,7 +2465,7 @@
                     </div>
                     ${ref.url ? `
                     <div class="pt-2">
-                        <a href="${ref.url}" target="_blank" rel="noopener noreferrer" class="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-xl bg-emerald-600 hover:bg-emerald-700 text-white text-xs font-semibold transition shadow-sm">
+                        <a href="${ref.url}" target="_blank" rel="noopener noreferrer" class="w-full sm:w-auto justify-center inline-flex items-center gap-1.5 px-3 py-2 sm:py-1.5 rounded-xl bg-emerald-600 hover:bg-emerald-700 text-white text-xs font-semibold transition shadow-sm">
                             <i data-lucide="external-link" class="w-3.5 h-3.5"></i>
                             <span>Buka &amp; Akses Sumber Pustaka</span>
                         </a>
@@ -2649,6 +2824,7 @@
             calculateFinance();
             renderInventory();
             renderReferences();
+            syncMobileHeaderIndicators("about");
             lucide.createIcons();
         }
         window.addEventListener("DOMContentLoaded", initApp);
